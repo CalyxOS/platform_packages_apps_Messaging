@@ -89,6 +89,7 @@ android_app {
     required: [
         "libframesequence",
         "libgiftranscode",
+        "com.android.messaging_whitelist",
     ],
     optimize: {
         obfuscate: true,
@@ -99,4 +100,12 @@ android_app {
     sdk_version: "current",
 
     product_specific: true,
+}
+
+prebuilt_etc {
+    name: "com.android.messaging_whitelist",
+    product_specific: true,
+    relative_install_path: "sysconfig",
+    src: "com.android.messaging_whitelist.xml",
+    filename_from_src: true,
 }
