@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d8e3d18_2112ce7e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-11-11T11:59:12Z",
+      "side": 1,
+      "message": "Chain merged upstream, 317505: Messaging: Show quick reply choices only on wearable devices | https://review.lineageos.org/c/LineageOS/android_packages_apps_Messaging/+/317505\n\n",
+      "revId": "a2ec06249c94804200849b0fc06443f0d414e159",
+      "serverId": "35266860-6252-469c-a67d-185064479fc0"
+    }
+  ]
+}
