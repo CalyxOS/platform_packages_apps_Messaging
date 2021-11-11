@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "837b6857_b3bc8960",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-11-11T12:01:05Z",
+      "side": 1,
+      "message": "Do we need this?\n\nIt sucks.\n\nI have a provider who spams class zero messages.",
+      "revId": "62252a8cad67c7d8799704a5a3af2b466e164065",
+      "serverId": "35266860-6252-469c-a67d-185064479fc0"
+    }
+  ]
+}
