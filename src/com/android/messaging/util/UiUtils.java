@@ -132,6 +132,16 @@ public class UiUtils {
                                         null /* placement */);
     }
 
+    public static void showSnackBar(final Context context, @NonNull final View parentView,
+            final String message) {
+        Assert.notNull(context);
+        Assert.isTrue(!TextUtils.isEmpty(message));
+        SnackBarManager.get()
+            .newBuilder(parentView)
+            .setText(message)
+            .show();
+    }
+
     public static void showSnackBarWithCustomAction(final Context context,
             @NonNull final View parentView,
             @NonNull final String message,
@@ -337,6 +347,18 @@ public class UiUtils {
         return phoneUtils.isSmsCapable() &&
                 phoneUtils.getHasPreferredSmsSim() &&
                 phoneUtils.isDefaultSmsApp();
+    }
+
+    /**
+     * Called to check if a message or conversation can be deleted - it needs to be the default
+     * sms app
+     * @return true if all conditions are nominal and we're ready to delete a message
+     */
+    public static boolean isReadyForDeleteAction() {
+        final PhoneUtils phoneUtils = PhoneUtils.getDefault();
+
+        // Is the default sms app?
+        return phoneUtils.isDefaultSmsApp();
     }
 
     /*
