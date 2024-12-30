@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +22,11 @@ import com.android.messaging.Factory;
 import com.android.messaging.util.Assert;
 import com.android.messaging.util.Assert.RunsOnAnyThread;
 import com.android.messaging.util.LogUtil;
-import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * <p>Loads and maintains a set of in-memory LRU caches for different types of media resources.
@@ -104,13 +103,10 @@ public class MediaResourceManager {
     // These tasks are run on a single worker thread with low priority so as not to contend with the
     // media loading tasks.
     private static final Executor MEDIA_BACKGROUND_EXECUTOR = Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(final Runnable runnable) {
-                    final Thread encodingThread = new Thread(runnable);
-                    encodingThread.setPriority(Thread.MIN_PRIORITY);
-                    return encodingThread;
-                }
+            runnable -> {
+                final Thread encodingThread = new Thread(runnable);
+                encodingThread.setPriority(Thread.MIN_PRIORITY);
+                return encodingThread;
             });
 
     /**
@@ -191,10 +187,7 @@ public class MediaResourceManager {
         }
         final MediaCache<T> mediaCache = mediaRequest.getMediaCache();
         if (mediaCache != null) {
-            final T mediaResource = mediaCache.fetchResourceFromCache(mediaRequest.getKey());
-            if (mediaResource != null) {
-                return mediaResource;
-            }
+            return mediaCache.fetchResourceFromCache(mediaRequest.getKey());
         }
         return null;
     }
@@ -236,8 +229,7 @@ public class MediaResourceManager {
         }
         // We don't use SafeAsyncTask here since it enforces the shared thread pool executor
         // whereas we want a dedicated thread pool executor.
-        AsyncTask<Void, Void, MediaLoadingResult<T>> mediaLoadingTask =
-                new AsyncTask<Void, Void, MediaLoadingResult<T>>() {
+        AsyncTask<Void, Void, MediaLoadingResult<T>> mediaLoadingTask = new AsyncTask<>() {
             private Exception mException;
 
             @Override
@@ -286,7 +278,6 @@ public class MediaResourceManager {
         mediaLoadingTask.executeOnExecutor(executor, (Void) null);
     }
 
-    @VisibleForTesting
     @RunsOnAnyThread
     <T extends RefCountedMediaResource> void addResourceToMemoryCache(
             final MediaRequest<T> mediaRequest, final T mediaResource) {

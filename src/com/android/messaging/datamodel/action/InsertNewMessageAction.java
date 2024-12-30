@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +24,8 @@ import android.os.Parcelable;
 import android.provider.Telephony;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.android.messaging.Factory;
 import com.android.messaging.datamodel.BugleDatabaseOperations;
 import com.android.messaging.datamodel.DataModel;
@@ -36,7 +39,6 @@ import com.android.messaging.datamodel.data.ParticipantData;
 import com.android.messaging.sms.MmsUtils;
 import com.android.messaging.util.Assert;
 import com.android.messaging.util.LogUtil;
-import com.android.messaging.util.OsUtil;
 import com.android.messaging.util.PhoneUtils;
 
 import java.util.ArrayList;
@@ -225,8 +227,7 @@ public class InsertNewMessageAction extends Action implements Parcelable {
             // to bind the message to the system default subscription if it's unbound.
             final ParticipantData unboundSelf = BugleDatabaseOperations.getExistingParticipant(
                     db, selfId);
-            if (unboundSelf.getSubId() == ParticipantData.DEFAULT_SELF_SUB_ID
-                    && OsUtil.isAtLeastL_MR1()) {
+            if (unboundSelf.getSubId() == ParticipantData.DEFAULT_SELF_SUB_ID) {
                 final int defaultSubId = PhoneUtils.getDefault().getDefaultSmsSubscriptionId();
                 self = BugleDatabaseOperations.getOrCreateSelf(db, defaultSubId);
             } else {
@@ -268,7 +269,7 @@ public class InsertNewMessageAction extends Action implements Parcelable {
 
         if (threadId < 0) {
             Assert.fail("InsertNewMessage: Couldn't get threadId in SMS db for these recipients: "
-                    + recipients.toString());
+                    + recipients);
             // TODO: How do we fail the action?
             return null;
         }
@@ -462,7 +463,7 @@ public class InsertNewMessageAction extends Action implements Parcelable {
     }
 
     public static final Parcelable.Creator<InsertNewMessageAction> CREATOR
-            = new Parcelable.Creator<InsertNewMessageAction>() {
+            = new Parcelable.Creator<>() {
         @Override
         public InsertNewMessageAction createFromParcel(final Parcel in) {
             return new InsertNewMessageAction(in);
@@ -475,7 +476,7 @@ public class InsertNewMessageAction extends Action implements Parcelable {
     };
 
     @Override
-    public void writeToParcel(final Parcel parcel, final int flags) {
+    public void writeToParcel(@NonNull final Parcel parcel, final int flags) {
         writeActionToParcel(parcel, flags);
     }
 }

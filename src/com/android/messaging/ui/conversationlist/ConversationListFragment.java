@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +17,29 @@
 package com.android.messaging.ui.conversationlist;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.ViewGroupCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewPropertyAnimator;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.AbsListView;
-import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewGroupCompat;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.messaging.R;
 import com.android.messaging.annotation.VisibleForAnimation;
@@ -48,7 +49,6 @@ import com.android.messaging.datamodel.binding.BindingBase;
 import com.android.messaging.datamodel.data.ConversationListData;
 import com.android.messaging.datamodel.data.ConversationListData.ConversationListDataListener;
 import com.android.messaging.datamodel.data.ConversationListItemData;
-import com.android.messaging.ui.BugleAnimationTags;
 import com.android.messaging.ui.ListEmptyView;
 import com.android.messaging.ui.SnackBarInteraction;
 import com.android.messaging.ui.UIIntents;
@@ -57,7 +57,7 @@ import com.android.messaging.util.Assert;
 import com.android.messaging.util.ImeUtil;
 import com.android.messaging.util.LogUtil;
 import com.android.messaging.util.UiUtils;
-import com.google.common.annotations.VisibleForTesting;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,20 +77,20 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     private boolean mForwardMessageMode;
 
     public interface ConversationListFragmentHost {
-        public void onConversationClick(final ConversationListData listData,
+        void onConversationClick(final ConversationListData listData,
                                         final ConversationListItemData conversationListItemData,
                                         final boolean isLongClick,
                                         final ConversationListItemView conversationView);
-        public void onCreateConversationClick();
-        public boolean isConversationSelected(final String conversationId);
-        public boolean isSwipeAnimatable();
-        public boolean isSelectionMode();
-        public boolean hasWindowFocus();
+        void onCreateConversationClick();
+        boolean isConversationSelected(final String conversationId);
+        boolean isSwipeAnimatable();
+        boolean isSelectionMode();
+        boolean hasWindowFocus();
     }
 
     private ConversationListFragmentHost mHost;
     private RecyclerView mRecyclerView;
-    private ImageView mStartNewConversationButton;
+    private ExtendedFloatingActionButton mStartNewConversationButton;
     private ListEmptyView mEmptyListMessageView;
     private ConversationListAdapter mAdapter;
 
@@ -100,7 +100,6 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             "conversationListViewState";
     private Parcelable mListState;
 
-    @VisibleForTesting
     final Binding<ConversationListData> mListBinding = BindingBase.createBinding(this);
 
     public static ConversationListFragment createArchivedConversationListFragment() {
@@ -125,7 +124,7 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     @Override
     public void onCreate(final Bundle bundle) {
         super.onCreate(bundle);
-        mListBinding.getData().init(getLoaderManager(), mListBinding);
+        mListBinding.getData().init(LoaderManager.getInstance(this), mListBinding);
         mAdapter = new ConversationListAdapter(getActivity(), null, this);
     }
 
@@ -194,7 +193,8 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             int mCurrentState = AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
 
             @Override
-            public void onScrolled(final RecyclerView recyclerView, final int dx, final int dy) {
+            public void onScrolled(@NonNull final RecyclerView recyclerView, final int dx,
+                                   final int dy) {
                 if (mCurrentState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL
                         || mCurrentState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
                     ImeUtil.get().hideImeKeyboard(getActivity(), mRecyclerView);
@@ -208,7 +208,8 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             }
 
             @Override
-            public void onScrollStateChanged(final RecyclerView recyclerView, final int newState) {
+            public void onScrollStateChanged(@NonNull final RecyclerView recyclerView,
+                                             final int newState) {
                 mCurrentState = newState;
             }
         });
@@ -218,20 +219,15 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             mListState = savedInstanceState.getParcelable(SAVED_INSTANCE_STATE_LIST_VIEW_STATE_KEY);
         }
 
-        mStartNewConversationButton = (ImageView) rootView.findViewById(
+        mStartNewConversationButton = (ExtendedFloatingActionButton) rootView.findViewById(
                 R.id.start_new_conversation_button);
         if (mArchiveMode) {
             mStartNewConversationButton.setVisibility(View.GONE);
         } else {
             mStartNewConversationButton.setVisibility(View.VISIBLE);
-            mStartNewConversationButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(final View clickView) {
-                    mHost.onCreateConversationClick();
-                }
-            });
+            mStartNewConversationButton.setOnClickListener(clickView ->
+                    mHost.onCreateConversationClick());
         }
-        ViewCompat.setTransitionName(mStartNewConversationButton, BugleAnimationTags.TAG_FABICON);
 
         // The root view has a non-null background, which by default is deemed by the framework
         // to be a "transition group," where all child views are animated together during an
@@ -244,8 +240,8 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     }
 
     @Override
-    public void onAttach(final Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(@NonNull final Context context) {
+        super.onAttach(context);
         if (VERBOSE) {
             LogUtil.v(LogUtil.BUGLE_TAG, "Attaching List");
         }
@@ -254,12 +250,12 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             mArchiveMode = arguments.getBoolean(BUNDLE_ARCHIVED_MODE, false);
             mForwardMessageMode = arguments.getBoolean(BUNDLE_FORWARD_MESSAGE_MODE, false);
         }
-        mListBinding.bind(DataModel.get().createConversationListData(activity, this, mArchiveMode));
+        mListBinding.bind(DataModel.get().createConversationListData(context, this, mArchiveMode));
     }
 
 
     @Override
-    public void onSaveInstanceState(final Bundle outState) {
+    public void onSaveInstanceState(@NonNull final Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mListState != null) {
             outState.putParcelable(SAVED_INSTANCE_STATE_LIST_VIEW_STATE_KEY, mListState);
@@ -305,7 +301,7 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     }
 
     @Override
-    public void onPrepareOptionsMenu(final Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull final Menu menu) {
         super.onPrepareOptionsMenu(menu);
         final MenuItem startNewConversationMenuItem =
                 menu.findItem(R.id.action_start_new_conversation);
@@ -313,7 +309,7 @@ public class ConversationListFragment extends Fragment implements ConversationLi
             // It is recommended for the Floating Action button functionality to be duplicated as a
             // menu
             AccessibilityManager accessibilityManager = (AccessibilityManager)
-                    getActivity().getSystemService(Context.ACCESSIBILITY_SERVICE);
+                    requireActivity().getSystemService(Context.ACCESSIBILITY_SERVICE);
             startNewConversationMenuItem.setVisible(accessibilityManager
                     .isTouchExplorationEnabled());
         }
@@ -325,7 +321,8 @@ public class ConversationListFragment extends Fragment implements ConversationLi
     }
 
     @Override
-    public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu,
+                                    @NonNull final MenuInflater inflater) {
         if (!isAdded()) {
             // Guard against being called before we're added to the activity
             return;
@@ -383,7 +380,7 @@ public class ConversationListFragment extends Fragment implements ConversationLi
 
     @Override
     public List<SnackBarInteraction> getSnackBarInteractions() {
-        final List<SnackBarInteraction> interactions = new ArrayList<SnackBarInteraction>(1);
+        final List<SnackBarInteraction> interactions = new ArrayList<>(1);
         final SnackBarInteraction fabInteraction =
                 new SnackBarInteraction.BasicSnackBarInteraction(mStartNewConversationButton);
         interactions.add(fabInteraction);
@@ -397,7 +394,7 @@ public class ConversationListFragment extends Fragment implements ConversationLi
                         R.integer.fab_animation_duration_ms));
     }
 
-    public ViewPropertyAnimator dismissFab() {
+    public void dismissFab() {
         // To prevent clicking while animating.
         mStartNewConversationButton.setEnabled(false);
         final MarginLayoutParams lp =
@@ -405,26 +402,14 @@ public class ConversationListFragment extends Fragment implements ConversationLi
         final float fabWidthWithLeftRightMargin = mStartNewConversationButton.getWidth()
                 + lp.leftMargin + lp.rightMargin;
         final int direction = AccessibilityUtil.isLayoutRtl(mStartNewConversationButton) ? -1 : 1;
-        return getNormalizedFabAnimator().translationX(direction * fabWidthWithLeftRightMargin);
+        getNormalizedFabAnimator().translationX(direction * fabWidthWithLeftRightMargin);
     }
 
-    public ViewPropertyAnimator showFab() {
-        return getNormalizedFabAnimator().translationX(0).withEndAction(new Runnable() {
-            @Override
-            public void run() {
-                // Re-enable clicks after the animation.
-                mStartNewConversationButton.setEnabled(true);
-            }
+    public void showFab() {
+        getNormalizedFabAnimator().translationX(0).withEndAction(() -> {
+            // Re-enable clicks after the animation.
+            mStartNewConversationButton.setEnabled(true);
         });
-    }
-
-    public View getHeroElementForTransition() {
-        return mArchiveMode ? null : mStartNewConversationButton;
-    }
-
-    @VisibleForAnimation
-    public RecyclerView getRecyclerView() {
-        return mRecyclerView;
     }
 
     @Override

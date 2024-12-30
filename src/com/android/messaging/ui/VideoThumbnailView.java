@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +34,6 @@ import com.android.messaging.R;
 import com.android.messaging.datamodel.data.MessagePartData;
 import com.android.messaging.datamodel.media.ImageRequest;
 import com.android.messaging.datamodel.media.MessagePartVideoThumbnailRequestDescriptor;
-import com.android.messaging.datamodel.media.VideoThumbnailRequest;
 import com.android.messaging.util.Assert;
 
 /**
@@ -95,15 +95,12 @@ public class VideoThumbnailView extends FrameLayout {
             mVideoView.clearFocus();
             addView(mVideoView, 0, new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(final MediaPlayer mediaPlayer) {
-                    mVideoLoaded = true;
-                    mVideoWidth = mediaPlayer.getVideoWidth();
-                    mVideoHeight = mediaPlayer.getVideoHeight();
-                    mediaPlayer.setLooping(loop);
-                    trySwitchToVideo();
-                }
+            mVideoView.setOnPreparedListener(mediaPlayer -> {
+                mVideoLoaded = true;
+                mVideoWidth = mediaPlayer.getVideoWidth();
+                mVideoHeight = mediaPlayer.getVideoHeight();
+                mediaPlayer.setLooping(loop);
+                trySwitchToVideo();
             });
             mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
@@ -111,12 +108,7 @@ public class VideoThumbnailView extends FrameLayout {
                     mPlayButton.setVisibility(View.VISIBLE);
                 }
             });
-            mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(final MediaPlayer mediaPlayer, final int i, final int i2) {
-                    return true;
-                }
-            });
+            mVideoView.setOnErrorListener((mediaPlayer, i, i2) -> true);
         } else {
             mVideoView = null;
         }
@@ -125,28 +117,22 @@ public class VideoThumbnailView extends FrameLayout {
         if (loop) {
             mPlayButton.setVisibility(View.GONE);
         } else {
-            mPlayButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(final View view) {
-                    if (mVideoSource == null) {
-                        return;
-                    }
+            mPlayButton.setOnClickListener(view -> {
+                if (mVideoSource == null) {
+                    return;
+                }
 
-                    if (mMode == MODE_PLAYABLE_VIDEO) {
-                        mVideoView.seekTo(0);
-                        start();
-                    } else {
-                        UIIntents.get().launchFullScreenVideoViewer(getContext(), mVideoSource);
-                    }
+                if (mMode == MODE_PLAYABLE_VIDEO) {
+                    mVideoView.seekTo(0);
+                    start();
+                } else {
+                    UIIntents.get().launchFullScreenVideoViewer(getContext(), mVideoSource);
                 }
             });
-            mPlayButton.setOnLongClickListener(new OnLongClickListener() {
-                @Override
-                public boolean onLongClick(final View view) {
-                    // Button prevents long click from propagating up, do it manually
-                    VideoThumbnailView.this.performLongClick();
-                    return true;
-                }
+            mPlayButton.setOnLongClickListener(view -> {
+                // Button prevents long click from propagating up, do it manually
+                VideoThumbnailView.this.performLongClick();
+                return true;
             });
         }
 
@@ -211,30 +197,19 @@ public class VideoThumbnailView extends FrameLayout {
         mVideoView.start();
     }
 
-    // TODO: The check could be added to MessagePartData itself so that all users of MessagePartData
-    // get the right behavior, instead of requiring all the users to do similar checks.
-    private static boolean shouldUseGenericVideoIcon(final boolean incomingMessage) {
-        return incomingMessage && !VideoThumbnailRequest.shouldShowIncomingVideoThumbnails();
-    }
-
     public void setSource(final MessagePartData part, final boolean incomingMessage) {
         if (part == null) {
             clearSource();
         } else {
             mVideoSource = part.getContentUri();
-            if (shouldUseGenericVideoIcon(incomingMessage)) {
-                mThumbnailImage.setImageResource(R.drawable.generic_video_icon);
-                mVideoWidth = ImageRequest.UNSPECIFIED_SIZE;
-                mVideoHeight = ImageRequest.UNSPECIFIED_SIZE;
-            } else {
-                mThumbnailImage.setImageResourceId(
-                        new MessagePartVideoThumbnailRequestDescriptor(part));
-                if (mVideoView != null) {
-                    mVideoView.setVideoURI(mVideoSource);
-                }
-                mVideoWidth = part.getWidth();
-                mVideoHeight = part.getHeight();
+
+            mThumbnailImage.setImageResourceId(
+                    new MessagePartVideoThumbnailRequestDescriptor(part));
+            if (mVideoView != null) {
+                mVideoView.setVideoURI(mVideoSource);
             }
+            mVideoWidth = part.getWidth();
+            mVideoHeight = part.getHeight();
         }
     }
 
@@ -243,16 +218,10 @@ public class VideoThumbnailView extends FrameLayout {
             clearSource();
         } else {
             mVideoSource = videoSource;
-            if (shouldUseGenericVideoIcon(incomingMessage)) {
-                mThumbnailImage.setImageResource(R.drawable.generic_video_icon);
-                mVideoWidth = ImageRequest.UNSPECIFIED_SIZE;
-                mVideoHeight = ImageRequest.UNSPECIFIED_SIZE;
-            } else {
-                mThumbnailImage.setImageResourceId(
-                        new MessagePartVideoThumbnailRequestDescriptor(videoSource));
-                if (mVideoView != null) {
-                    mVideoView.setVideoURI(videoSource);
-                }
+            mThumbnailImage.setImageResourceId(
+                    new MessagePartVideoThumbnailRequestDescriptor(videoSource));
+            if (mVideoView != null) {
+                mVideoView.setVideoURI(videoSource);
             }
         }
     }

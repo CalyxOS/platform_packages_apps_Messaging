@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +19,15 @@ package com.android.messaging.ui;
 
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.messaging.R;
 import com.android.messaging.util.BugleActivityUtil;
@@ -194,18 +197,17 @@ public class BugleActionBarActivity extends AppCompatActivity implements ImeUtil
     }
 
     @Override
-    public boolean onOptionsItemSelected(final MenuItem menuItem) {
+    public boolean onOptionsItemSelected(@NonNull final MenuItem menuItem) {
         if (mActionMode != null &&
                 mActionMode.getCallback().onActionItemClicked(mActionMode, menuItem)) {
             return true;
         }
 
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                if (mActionMode != null) {
-                    dismissActionMode();
-                    return true;
-                }
+        if (menuItem.getItemId() == android.R.id.home) {
+            if (mActionMode != null) {
+                dismissActionMode();
+                return true;
+            }
         }
         return super.onOptionsItemSelected(menuItem);
     }
@@ -349,7 +351,7 @@ public class BugleActionBarActivity extends AppCompatActivity implements ImeUtil
             mActionMode.getCallback().onPrepareActionMode(mActionMode, mActionBarMenu);
             actionBar.setBackgroundDrawable(new ColorDrawable(
                     getResources().getColor(R.color.contextual_action_bar_background_color)));
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_cancel_small_dark);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_cancel_small_light);
             actionBar.show();
         }
     }

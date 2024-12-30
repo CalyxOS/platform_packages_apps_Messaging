@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,7 +323,7 @@ public class ExifInterface {
      * Tags that contain offset markers. These are included in the banned
      * defines.
      */
-    private static HashSet<Short> sOffsetTags = new HashSet<Short>();
+    private static final HashSet<Short> sOffsetTags = new HashSet<>();
     static {
         sOffsetTags.add(getTrueTagKey(TAG_GPS_IFD));
         sOffsetTags.add(getTrueTagKey(TAG_EXIF_IFD));
@@ -334,7 +335,7 @@ public class ExifInterface {
     /**
      * Tags with definitions that cannot be overridden (banned defines).
      */
-    protected static HashSet<Short> sBannedDefines = new HashSet<Short>(sOffsetTags);
+    protected static final HashSet<Short> sBannedDefines = new HashSet<>(sOffsetTags);
     static {
         sBannedDefines.add(getTrueTagKey(TAG_NULL));
         sBannedDefines.add(getTrueTagKey(TAG_JPEG_INTERCHANGE_FORMAT_LENGTH));
@@ -377,84 +378,84 @@ public class ExifInterface {
      * <li>RIGHT_BOTTOM is a 270 degree clockwise rotation.</li>
      * </ul>
      */
-    public static interface Orientation {
-        public static final short TOP_LEFT = 1;
-        public static final short TOP_RIGHT = 2;
-        public static final short BOTTOM_LEFT = 3;
-        public static final short BOTTOM_RIGHT = 4;
-        public static final short LEFT_TOP = 5;
-        public static final short RIGHT_TOP = 6;
-        public static final short LEFT_BOTTOM = 7;
-        public static final short RIGHT_BOTTOM = 8;
+    public interface Orientation {
+        short TOP_LEFT = 1;
+        short TOP_RIGHT = 2;
+        short BOTTOM_LEFT = 3;
+        short BOTTOM_RIGHT = 4;
+        short LEFT_TOP = 5;
+        short RIGHT_TOP = 6;
+        short LEFT_BOTTOM = 7;
+        short RIGHT_BOTTOM = 8;
     }
 
     /**
      * Constants for {@link TAG_Y_CB_CR_POSITIONING}
      */
-    public static interface YCbCrPositioning {
-        public static final short CENTERED = 1;
-        public static final short CO_SITED = 2;
+    public interface YCbCrPositioning {
+        short CENTERED = 1;
+        short CO_SITED = 2;
     }
 
     /**
      * Constants for {@link TAG_COMPRESSION}
      */
-    public static interface Compression {
-        public static final short UNCOMPRESSION = 1;
-        public static final short JPEG = 6;
+    public interface Compression {
+        short UNCOMPRESSION = 1;
+        short JPEG = 6;
     }
 
     /**
      * Constants for {@link TAG_RESOLUTION_UNIT}
      */
-    public static interface ResolutionUnit {
-        public static final short INCHES = 2;
-        public static final short CENTIMETERS = 3;
+    public interface ResolutionUnit {
+        short INCHES = 2;
+        short CENTIMETERS = 3;
     }
 
     /**
      * Constants for {@link TAG_PHOTOMETRIC_INTERPRETATION}
      */
-    public static interface PhotometricInterpretation {
-        public static final short RGB = 2;
-        public static final short YCBCR = 6;
+    public interface PhotometricInterpretation {
+        short RGB = 2;
+        short YCBCR = 6;
     }
 
     /**
      * Constants for {@link TAG_PLANAR_CONFIGURATION}
      */
-    public static interface PlanarConfiguration {
-        public static final short CHUNKY = 1;
-        public static final short PLANAR = 2;
+    public interface PlanarConfiguration {
+        short CHUNKY = 1;
+        short PLANAR = 2;
     }
 
     /**
      * Constants for {@link TAG_EXPOSURE_PROGRAM}
      */
-    public static interface ExposureProgram {
-        public static final short NOT_DEFINED = 0;
-        public static final short MANUAL = 1;
-        public static final short NORMAL_PROGRAM = 2;
-        public static final short APERTURE_PRIORITY = 3;
-        public static final short SHUTTER_PRIORITY = 4;
-        public static final short CREATIVE_PROGRAM = 5;
-        public static final short ACTION_PROGRAM = 6;
-        public static final short PROTRAIT_MODE = 7;
-        public static final short LANDSCAPE_MODE = 8;
+    public interface ExposureProgram {
+        short NOT_DEFINED = 0;
+        short MANUAL = 1;
+        short NORMAL_PROGRAM = 2;
+        short APERTURE_PRIORITY = 3;
+        short SHUTTER_PRIORITY = 4;
+        short CREATIVE_PROGRAM = 5;
+        short ACTION_PROGRAM = 6;
+        short PROTRAIT_MODE = 7;
+        short LANDSCAPE_MODE = 8;
     }
 
     /**
      * Constants for {@link TAG_METERING_MODE}
      */
-    public static interface MeteringMode {
-        public static final short UNKNOWN = 0;
-        public static final short AVERAGE = 1;
-        public static final short CENTER_WEIGHTED_AVERAGE = 2;
-        public static final short SPOT = 3;
-        public static final short MULTISPOT = 4;
-        public static final short PATTERN = 5;
-        public static final short PARTAIL = 6;
-        public static final short OTHER = 255;
+    public interface MeteringMode {
+        short UNKNOWN = 0;
+        short AVERAGE = 1;
+        short CENTER_WEIGHTED_AVERAGE = 2;
+        short SPOT = 3;
+        short MULTISPOT = 4;
+        short PATTERN = 5;
+        short PARTAIL = 6;
+        short OTHER = 255;
     }
 
     /**
@@ -466,244 +467,244 @@ public class ExifInterface {
      * short flash = FIRED | RETURN_STROBE_RETURN_LIGHT_DETECTED |
      * MODE_AUTO_MODE
      */
-    public static interface Flash {
+    public interface Flash {
         // LSB
-        public static final short DID_NOT_FIRED = 0;
-        public static final short FIRED = 1;
+        short DID_NOT_FIRED = 0;
+        short FIRED = 1;
         // 1st~2nd bits
-        public static final short RETURN_NO_STROBE_RETURN_DETECTION_FUNCTION = 0 << 1;
-        public static final short RETURN_STROBE_RETURN_LIGHT_NOT_DETECTED = 2 << 1;
-        public static final short RETURN_STROBE_RETURN_LIGHT_DETECTED = 3 << 1;
+        short RETURN_NO_STROBE_RETURN_DETECTION_FUNCTION = 0 << 1;
+        short RETURN_STROBE_RETURN_LIGHT_NOT_DETECTED = 2 << 1;
+        short RETURN_STROBE_RETURN_LIGHT_DETECTED = 3 << 1;
         // 3rd~4th bits
-        public static final short MODE_UNKNOWN = 0 << 3;
-        public static final short MODE_COMPULSORY_FLASH_FIRING = 1 << 3;
-        public static final short MODE_COMPULSORY_FLASH_SUPPRESSION = 2 << 3;
-        public static final short MODE_AUTO_MODE = 3 << 3;
+        short MODE_UNKNOWN = 0 << 3;
+        short MODE_COMPULSORY_FLASH_FIRING = 1 << 3;
+        short MODE_COMPULSORY_FLASH_SUPPRESSION = 2 << 3;
+        short MODE_AUTO_MODE = 3 << 3;
         // 5th bit
-        public static final short FUNCTION_PRESENT = 0 << 5;
-        public static final short FUNCTION_NO_FUNCTION = 1 << 5;
+        short FUNCTION_PRESENT = 0 << 5;
+        short FUNCTION_NO_FUNCTION = 1 << 5;
         // 6th bit
-        public static final short RED_EYE_REDUCTION_NO_OR_UNKNOWN = 0 << 6;
-        public static final short RED_EYE_REDUCTION_SUPPORT = 1 << 6;
+        short RED_EYE_REDUCTION_NO_OR_UNKNOWN = 0 << 6;
+        short RED_EYE_REDUCTION_SUPPORT = 1 << 6;
     }
 
     /**
      * Constants for {@link TAG_COLOR_SPACE}
      */
-    public static interface ColorSpace {
-        public static final short SRGB = 1;
-        public static final short UNCALIBRATED = (short) 0xFFFF;
+    public interface ColorSpace {
+        short SRGB = 1;
+        short UNCALIBRATED = (short) 0xFFFF;
     }
 
     /**
      * Constants for {@link TAG_EXPOSURE_MODE}
      */
-    public static interface ExposureMode {
-        public static final short AUTO_EXPOSURE = 0;
-        public static final short MANUAL_EXPOSURE = 1;
-        public static final short AUTO_BRACKET = 2;
+    public interface ExposureMode {
+        short AUTO_EXPOSURE = 0;
+        short MANUAL_EXPOSURE = 1;
+        short AUTO_BRACKET = 2;
     }
 
     /**
      * Constants for {@link TAG_WHITE_BALANCE}
      */
-    public static interface WhiteBalance {
-        public static final short AUTO = 0;
-        public static final short MANUAL = 1;
+    public interface WhiteBalance {
+        short AUTO = 0;
+        short MANUAL = 1;
     }
 
     /**
      * Constants for {@link TAG_SCENE_CAPTURE_TYPE}
      */
-    public static interface SceneCapture {
-        public static final short STANDARD = 0;
-        public static final short LANDSCAPE = 1;
-        public static final short PROTRAIT = 2;
-        public static final short NIGHT_SCENE = 3;
+    public interface SceneCapture {
+        short STANDARD = 0;
+        short LANDSCAPE = 1;
+        short PROTRAIT = 2;
+        short NIGHT_SCENE = 3;
     }
 
     /**
      * Constants for {@link TAG_COMPONENTS_CONFIGURATION}
      */
-    public static interface ComponentsConfiguration {
-        public static final short NOT_EXIST = 0;
-        public static final short Y = 1;
-        public static final short CB = 2;
-        public static final short CR = 3;
-        public static final short R = 4;
-        public static final short G = 5;
-        public static final short B = 6;
+    public interface ComponentsConfiguration {
+        short NOT_EXIST = 0;
+        short Y = 1;
+        short CB = 2;
+        short CR = 3;
+        short R = 4;
+        short G = 5;
+        short B = 6;
     }
 
     /**
      * Constants for {@link TAG_LIGHT_SOURCE}
      */
-    public static interface LightSource {
-        public static final short UNKNOWN = 0;
-        public static final short DAYLIGHT = 1;
-        public static final short FLUORESCENT = 2;
-        public static final short TUNGSTEN = 3;
-        public static final short FLASH = 4;
-        public static final short FINE_WEATHER = 9;
-        public static final short CLOUDY_WEATHER = 10;
-        public static final short SHADE = 11;
-        public static final short DAYLIGHT_FLUORESCENT = 12;
-        public static final short DAY_WHITE_FLUORESCENT = 13;
-        public static final short COOL_WHITE_FLUORESCENT = 14;
-        public static final short WHITE_FLUORESCENT = 15;
-        public static final short STANDARD_LIGHT_A = 17;
-        public static final short STANDARD_LIGHT_B = 18;
-        public static final short STANDARD_LIGHT_C = 19;
-        public static final short D55 = 20;
-        public static final short D65 = 21;
-        public static final short D75 = 22;
-        public static final short D50 = 23;
-        public static final short ISO_STUDIO_TUNGSTEN = 24;
-        public static final short OTHER = 255;
+    public interface LightSource {
+        short UNKNOWN = 0;
+        short DAYLIGHT = 1;
+        short FLUORESCENT = 2;
+        short TUNGSTEN = 3;
+        short FLASH = 4;
+        short FINE_WEATHER = 9;
+        short CLOUDY_WEATHER = 10;
+        short SHADE = 11;
+        short DAYLIGHT_FLUORESCENT = 12;
+        short DAY_WHITE_FLUORESCENT = 13;
+        short COOL_WHITE_FLUORESCENT = 14;
+        short WHITE_FLUORESCENT = 15;
+        short STANDARD_LIGHT_A = 17;
+        short STANDARD_LIGHT_B = 18;
+        short STANDARD_LIGHT_C = 19;
+        short D55 = 20;
+        short D65 = 21;
+        short D75 = 22;
+        short D50 = 23;
+        short ISO_STUDIO_TUNGSTEN = 24;
+        short OTHER = 255;
     }
 
     /**
      * Constants for {@link TAG_SENSING_METHOD}
      */
-    public static interface SensingMethod {
-        public static final short NOT_DEFINED = 1;
-        public static final short ONE_CHIP_COLOR = 2;
-        public static final short TWO_CHIP_COLOR = 3;
-        public static final short THREE_CHIP_COLOR = 4;
-        public static final short COLOR_SEQUENTIAL_AREA = 5;
-        public static final short TRILINEAR = 7;
-        public static final short COLOR_SEQUENTIAL_LINEAR = 8;
+    public interface SensingMethod {
+        short NOT_DEFINED = 1;
+        short ONE_CHIP_COLOR = 2;
+        short TWO_CHIP_COLOR = 3;
+        short THREE_CHIP_COLOR = 4;
+        short COLOR_SEQUENTIAL_AREA = 5;
+        short TRILINEAR = 7;
+        short COLOR_SEQUENTIAL_LINEAR = 8;
     }
 
     /**
      * Constants for {@link TAG_FILE_SOURCE}
      */
-    public static interface FileSource {
-        public static final short DSC = 3;
+    public interface FileSource {
+        short DSC = 3;
     }
 
     /**
      * Constants for {@link TAG_SCENE_TYPE}
      */
-    public static interface SceneType {
-        public static final short DIRECT_PHOTOGRAPHED = 1;
+    public interface SceneType {
+        short DIRECT_PHOTOGRAPHED = 1;
     }
 
     /**
      * Constants for {@link TAG_GAIN_CONTROL}
      */
-    public static interface GainControl {
-        public static final short NONE = 0;
-        public static final short LOW_UP = 1;
-        public static final short HIGH_UP = 2;
-        public static final short LOW_DOWN = 3;
-        public static final short HIGH_DOWN = 4;
+    public interface GainControl {
+        short NONE = 0;
+        short LOW_UP = 1;
+        short HIGH_UP = 2;
+        short LOW_DOWN = 3;
+        short HIGH_DOWN = 4;
     }
 
     /**
      * Constants for {@link TAG_CONTRAST}
      */
-    public static interface Contrast {
-        public static final short NORMAL = 0;
-        public static final short SOFT = 1;
-        public static final short HARD = 2;
+    public interface Contrast {
+        short NORMAL = 0;
+        short SOFT = 1;
+        short HARD = 2;
     }
 
     /**
      * Constants for {@link TAG_SATURATION}
      */
-    public static interface Saturation {
-        public static final short NORMAL = 0;
-        public static final short LOW = 1;
-        public static final short HIGH = 2;
+    public interface Saturation {
+        short NORMAL = 0;
+        short LOW = 1;
+        short HIGH = 2;
     }
 
     /**
      * Constants for {@link TAG_SHARPNESS}
      */
-    public static interface Sharpness {
-        public static final short NORMAL = 0;
-        public static final short SOFT = 1;
-        public static final short HARD = 2;
+    public interface Sharpness {
+        short NORMAL = 0;
+        short SOFT = 1;
+        short HARD = 2;
     }
 
     /**
      * Constants for {@link TAG_SUBJECT_DISTANCE}
      */
-    public static interface SubjectDistance {
-        public static final short UNKNOWN = 0;
-        public static final short MACRO = 1;
-        public static final short CLOSE_VIEW = 2;
-        public static final short DISTANT_VIEW = 3;
+    public interface SubjectDistance {
+        short UNKNOWN = 0;
+        short MACRO = 1;
+        short CLOSE_VIEW = 2;
+        short DISTANT_VIEW = 3;
     }
 
     /**
      * Constants for {@link TAG_GPS_LATITUDE_REF},
      * {@link TAG_GPS_DEST_LATITUDE_REF}
      */
-    public static interface GpsLatitudeRef {
-        public static final String NORTH = "N";
-        public static final String SOUTH = "S";
+    public interface GpsLatitudeRef {
+        String NORTH = "N";
+        String SOUTH = "S";
     }
 
     /**
      * Constants for {@link TAG_GPS_LONGITUDE_REF},
      * {@link TAG_GPS_DEST_LONGITUDE_REF}
      */
-    public static interface GpsLongitudeRef {
-        public static final String EAST = "E";
-        public static final String WEST = "W";
+    public interface GpsLongitudeRef {
+        String EAST = "E";
+        String WEST = "W";
     }
 
     /**
      * Constants for {@link TAG_GPS_ALTITUDE_REF}
      */
-    public static interface GpsAltitudeRef {
-        public static final short SEA_LEVEL = 0;
-        public static final short SEA_LEVEL_NEGATIVE = 1;
+    public interface GpsAltitudeRef {
+        short SEA_LEVEL = 0;
+        short SEA_LEVEL_NEGATIVE = 1;
     }
 
     /**
      * Constants for {@link TAG_GPS_STATUS}
      */
-    public static interface GpsStatus {
-        public static final String IN_PROGRESS = "A";
-        public static final String INTEROPERABILITY = "V";
+    public interface GpsStatus {
+        String IN_PROGRESS = "A";
+        String INTEROPERABILITY = "V";
     }
 
     /**
      * Constants for {@link TAG_GPS_MEASURE_MODE}
      */
-    public static interface GpsMeasureMode {
-        public static final String MODE_2_DIMENSIONAL = "2";
-        public static final String MODE_3_DIMENSIONAL = "3";
+    public interface GpsMeasureMode {
+        String MODE_2_DIMENSIONAL = "2";
+        String MODE_3_DIMENSIONAL = "3";
     }
 
     /**
      * Constants for {@link TAG_GPS_SPEED_REF},
      * {@link TAG_GPS_DEST_DISTANCE_REF}
      */
-    public static interface GpsSpeedRef {
-        public static final String KILOMETERS = "K";
-        public static final String MILES = "M";
-        public static final String KNOTS = "N";
+    public interface GpsSpeedRef {
+        String KILOMETERS = "K";
+        String MILES = "M";
+        String KNOTS = "N";
     }
 
     /**
      * Constants for {@link TAG_GPS_TRACK_REF},
      * {@link TAG_GPS_IMG_DIRECTION_REF}, {@link TAG_GPS_DEST_BEARING_REF}
      */
-    public static interface GpsTrackRef {
-        public static final String TRUE_DIRECTION = "T";
-        public static final String MAGNETIC_DIRECTION = "M";
+    public interface GpsTrackRef {
+        String TRUE_DIRECTION = "T";
+        String MAGNETIC_DIRECTION = "M";
     }
 
     /**
      * Constants for {@link TAG_GPS_DIFFERENTIAL}
      */
-    public static interface GpsDifferential {
-        public static final short WITHOUT_DIFFERENTIAL_CORRECTION = 0;
-        public static final short DIFFERENTIAL_CORRECTION_APPLIED = 1;
+    public interface GpsDifferential {
+        short WITHOUT_DIFFERENTIAL_CORRECTION = 0;
+        short DIFFERENTIAL_CORRECTION_APPLIED = 1;
     }
 
     private static final String NULL_ARGUMENT_STRING = "Argument is null";
@@ -719,7 +720,6 @@ public class ExifInterface {
      * object's existing exif tags.
      *
      * @param jpeg a byte array containing a jpeg compressed image.
-     * @throws java.io.IOException
      */
     public void readExif(byte[] jpeg) throws IOException {
         readExif(new ByteArrayInputStream(jpeg));
@@ -730,7 +730,6 @@ public class ExifInterface {
      * object's existing exif tags.
      *
      * @param inStream an InputStream containing a jpeg compressed image.
-     * @throws java.io.IOException
      */
     public void readExif(InputStream inStream) throws IOException {
         if (inStream == null) {
@@ -750,8 +749,6 @@ public class ExifInterface {
      * existing exif tags.
      *
      * @param inFileName a string representing the filepath to jpeg file.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public void readExif(String inFileName) throws FileNotFoundException, IOException {
         if (inFileName == null) {
@@ -793,7 +790,6 @@ public class ExifInterface {
      * @param jpeg a byte array containing a jpeg compressed image.
      * @param exifOutStream an OutputStream to which the jpeg image with added
      *            exif tags will be written.
-     * @throws java.io.IOException
      */
     public void writeExif(byte[] jpeg, OutputStream exifOutStream) throws IOException {
         if (jpeg == null || exifOutStream == null) {
@@ -811,7 +807,6 @@ public class ExifInterface {
      * @param bmap a bitmap to compress and write exif into.
      * @param exifOutStream the OutputStream to which the jpeg image with added
      *            exif tags will be written.
-     * @throws java.io.IOException
      */
     public void writeExif(Bitmap bmap, OutputStream exifOutStream) throws IOException {
         if (bmap == null || exifOutStream == null) {
@@ -829,7 +824,6 @@ public class ExifInterface {
      * @param jpegStream an InputStream containing a jpeg compressed image.
      * @param exifOutStream an OutputStream to which the jpeg image with added
      *            exif tags will be written.
-     * @throws java.io.IOException
      */
     public void writeExif(InputStream jpegStream, OutputStream exifOutStream) throws IOException {
         if (jpegStream == null || exifOutStream == null) {
@@ -847,8 +841,6 @@ public class ExifInterface {
      * @param jpeg a byte array containing a jpeg compressed image.
      * @param exifOutFileName a String containing the filepath to which the jpeg
      *            image with added exif tags will be written.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public void writeExif(byte[] jpeg, String exifOutFileName) throws FileNotFoundException,
             IOException {
@@ -874,8 +866,6 @@ public class ExifInterface {
      * @param bmap a bitmap to compress and write exif into.
      * @param exifOutFileName a String containing the filepath to which the jpeg
      *            image with added exif tags will be written.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public void writeExif(Bitmap bmap, String exifOutFileName) throws FileNotFoundException,
             IOException {
@@ -901,8 +891,6 @@ public class ExifInterface {
      * @param jpegStream an InputStream containing a jpeg compressed image.
      * @param exifOutFileName a String containing the filepath to which the jpeg
      *            image with added exif tags will be written.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public void writeExif(InputStream jpegStream, String exifOutFileName)
             throws FileNotFoundException, IOException {
@@ -928,8 +916,6 @@ public class ExifInterface {
      * @param jpegFileName a String containing the filepath for a jpeg file.
      * @param exifOutFileName a String containing the filepath to which the jpeg
      *            image with added exif tags will be written.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public void writeExif(String jpegFileName, String exifOutFileName)
             throws FileNotFoundException, IOException {
@@ -977,7 +963,6 @@ public class ExifInterface {
      * @param exifOutFileName an String containing a filepath for a jpeg file.
      * @return an OutputStream that writes to the exifOutFileName file, and adds
      *         exif metadata. A jpeg image should be written to this stream.
-     * @throws java.io.FileNotFoundException
      */
     public OutputStream getExifWriterStream(String exifOutFileName) throws FileNotFoundException {
         if (exifOutFileName == null) {
@@ -1004,8 +989,6 @@ public class ExifInterface {
      *            tags if possible.
      * @return true if success, false if could not overwrite. If false, no
      *         changes are made to the file.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      */
     public boolean rewriteExif(String filename, Collection<ExifTag> tags)
             throws FileNotFoundException, IOException {
@@ -1063,7 +1046,6 @@ public class ExifInterface {
      *            existing tags if possible.
      * @return true if success, false if could not overwrite. If false, no
      *         changes are made to the ByteBuffer.
-     * @throws java.io.IOException
      */
     public boolean rewriteExif(ByteBuffer buf, Collection<ExifTag> tags) throws IOException {
         ExifModifier mod = null;
@@ -1086,8 +1068,6 @@ public class ExifInterface {
      * @param filename a String containing a filepath for a jpeg file.
      * @param tags tags that will be written into the jpeg file over existing
      *            tags if possible.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      * @see #rewriteExif
      */
     public void forceRewriteExif(String filename, Collection<ExifTag> tags)
@@ -1125,8 +1105,6 @@ public class ExifInterface {
      * This preserves tags that are not being rewritten.
      *
      * @param filename a String containing a filepath for a jpeg file.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
      * @see #rewriteExif
      */
     public void forceRewriteExif(String filename) throws FileNotFoundException, IOException {
@@ -1244,10 +1222,10 @@ public class ExifInterface {
      */
     public Long getTagLongValue(int tagId, int ifdId) {
         long[] l = getTagLongValues(tagId, ifdId);
-        if (l == null || l.length <= 0) {
+        if (l == null || l.length == 0) {
             return null;
         }
-        return new Long(l[0]);
+        return l[0];
     }
 
     /**
@@ -1263,10 +1241,10 @@ public class ExifInterface {
      */
     public Integer getTagIntValue(int tagId, int ifdId) {
         int[] l = getTagIntValues(tagId, ifdId);
-        if (l == null || l.length <= 0) {
+        if (l == null || l.length == 0) {
             return null;
         }
-        return new Integer(l[0]);
+        return l[0];
     }
 
     /**
@@ -1282,10 +1260,10 @@ public class ExifInterface {
      */
     public Byte getTagByteValue(int tagId, int ifdId) {
         byte[] l = getTagByteValues(tagId, ifdId);
-        if (l == null || l.length <= 0) {
+        if (l == null || l.length == 0) {
             return null;
         }
-        return new Byte(l[0]);
+        return l[0];
     }
 
     /**
@@ -2391,7 +2369,7 @@ public class ExifInterface {
     protected static int[] getAllowedIfdsFromInfo(int info) {
         int ifdFlags = getAllowedIfdFlagsFromInfo(info);
         int[] ifds = IfdData.getIfds();
-        ArrayList<Integer> l = new ArrayList<Integer>();
+        ArrayList<Integer> l = new ArrayList<>();
         for (int i = 0; i < IfdId.TYPE_IFD_COUNT; i++) {
             int flag = (ifdFlags >> i) & 1;
             if (flag == 1) {

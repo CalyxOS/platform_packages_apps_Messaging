@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +27,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -34,16 +34,18 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationCompat.WearableExtender;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.RemoteInput;
-import androidx.collection.SimpleArrayMap;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 import android.text.style.TextAppearanceSpan;
+
+import androidx.collection.SimpleArrayMap;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationCompat.WearableExtender;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
+import androidx.core.app.RemoteInput;
 
 import com.android.messaging.Factory;
 import com.android.messaging.R;
@@ -54,20 +56,17 @@ import com.android.messaging.datamodel.MessageNotificationState.MultiMessageNoti
 import com.android.messaging.datamodel.action.MarkAsReadAction;
 import com.android.messaging.datamodel.action.MarkAsSeenAction;
 import com.android.messaging.datamodel.action.RedownloadMmsAction;
-import com.android.messaging.datamodel.data.ConversationListItemData;
 import com.android.messaging.datamodel.media.AvatarRequestDescriptor;
 import com.android.messaging.datamodel.media.ImageResource;
 import com.android.messaging.datamodel.media.MediaRequest;
 import com.android.messaging.datamodel.media.MediaResourceManager;
 import com.android.messaging.datamodel.media.MessagePartVideoThumbnailRequestDescriptor;
 import com.android.messaging.datamodel.media.UriImageRequestDescriptor;
-import com.android.messaging.datamodel.media.VideoThumbnailRequest;
 import com.android.messaging.sms.MmsSmsUtils;
 import com.android.messaging.sms.MmsUtils;
 import com.android.messaging.ui.UIIntents;
 import com.android.messaging.util.Assert;
 import com.android.messaging.util.AvatarUriUtil;
-import com.android.messaging.util.BugleGservices;
 import com.android.messaging.util.BugleGservicesKeys;
 import com.android.messaging.util.BuglePrefs;
 import com.android.messaging.util.BuglePrefsKeys;
@@ -77,9 +76,7 @@ import com.android.messaging.util.ImageUtils;
 import com.android.messaging.util.LogUtil;
 import com.android.messaging.util.NotificationPlayer;
 import com.android.messaging.util.NotificationsUtil;
-import com.android.messaging.util.OsUtil;
 import com.android.messaging.util.PendingIntentConstants;
-import com.android.messaging.util.PhoneUtils;
 import com.android.messaging.util.ThreadUtil;
 import com.android.messaging.util.UriUtil;
 
@@ -95,8 +92,6 @@ import java.util.Set;
  * There are currently two main classes of notification and their rules: <p>
  * 1) Messages - {@link MessageNotificationState}. Only one message notification.
  * Unread messages across senders and conversations are coalesced.<p>
- * 2) Failed Messages - {@link MessageNotificationState#checkFailedMesages } Only one failed
- * message. Multiple failures are coalesced.<p>
  *
  * To add a new class of notifications, subclass the NotificationState and add commands which
  * create one and pass into general creation function.
@@ -120,8 +115,7 @@ public class BugleNotifications {
 
     private static final String WEARABLE_COMPANION_APP_PACKAGE = "com.google.android.wearable.app";
 
-    private static final Set<NotificationState> sPendingNotifications =
-            new HashSet<NotificationState>();
+    private static final Set<NotificationState> sPendingNotifications = new HashSet<>();
 
     private static int sWearableImageWidth;
     private static int sWearableImageHeight;
@@ -135,8 +129,7 @@ public class BugleNotifications {
     // sLastMessageDingTime is a map between a conversation id and a time. It's used to keep track
     // of the time we last dinged a message for this conversation. When messages are coming in
     // at flurry, we don't want to over-ding the user.
-    private static final SimpleArrayMap<String, Long> sLastMessageDingTime =
-            new SimpleArrayMap<String, Long>();
+    private static final SimpleArrayMap<String, Long> sLastMessageDingTime = new SimpleArrayMap<>();
     private static int sTimeBetweenDingsMs;
 
     /**
@@ -429,7 +422,7 @@ public class BugleNotifications {
         if (state.mParticipantAvatarsUris != null) {
             final Uri avatarUri = state.mParticipantAvatarsUris.get(0);
             final AvatarRequestDescriptor descriptor = new AvatarRequestDescriptor(avatarUri,
-                    sIconWidth, sIconHeight, OsUtil.isAtLeastL());
+                    sIconWidth, sIconHeight, true);
             final MediaRequest<ImageResource> imageRequest = descriptor.buildSyncMediaRequest(
                     context);
 
@@ -605,10 +598,9 @@ public class BugleNotifications {
                     // Find out the last time we dinged for this conversation
                     Long lastTime = sLastMessageDingTime.get(conversationId);
                     if (sTimeBetweenDingsMs == 0) {
-                        sTimeBetweenDingsMs = BugleGservices.get().getInt(
-                                BugleGservicesKeys.NOTIFICATION_TIME_BETWEEN_RINGS_SECONDS,
-                                BugleGservicesKeys.NOTIFICATION_TIME_BETWEEN_RINGS_SECONDS_DEFAULT) *
-                                    1000;
+                        sTimeBetweenDingsMs =
+                                BugleGservicesKeys.NOTIFICATION_TIME_BETWEEN_RINGS_SECONDS_DEFAULT *
+                                        1000;
                     }
                     if (lastTime == null
                             || SystemClock.elapsedRealtime() - lastTime > sTimeBetweenDingsMs) {
@@ -638,15 +630,14 @@ public class BugleNotifications {
         }
 
         synchronized (sPendingNotifications) {
-            if (sPendingNotifications.contains(notificationState)) {
-                sPendingNotifications.remove(notificationState);
-            }
+            sPendingNotifications.remove(notificationState);
         }
 
         notificationState.mNotificationBuilder
             .setSmallIcon(notificationState.getIcon())
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-            .setColor(context.getResources().getColor(R.color.notification_accent_color))
+            .setColor(context.getResources().getColor(R.color.notification_accent_color,
+                    context.getTheme()))
 //            .setPublicVersion(null)    // TODO: when/if we ever support different
                                          // text on the lockscreen, instead of "contents hidden"
             .setCategory(CATEGORY_MESSAGE);
@@ -658,7 +649,8 @@ public class BugleNotifications {
         if (notificationState.mParticipantContactUris != null &&
                 notificationState.mParticipantContactUris.size() > 0) {
             for (final Uri contactUri : notificationState.mParticipantContactUris) {
-                notificationState.mNotificationBuilder.addPerson(contactUri.toString());
+                Person p = new Person.Builder().setUri(contactUri.toString()).build();
+                notificationState.mNotificationBuilder.addPerson(p);
             }
         }
 
@@ -667,16 +659,14 @@ public class BugleNotifications {
         Bitmap attachmentBitmap = null;
 
         // For messages with photo/video attachment, request an image to show in the notification.
-        if (attachmentUri != null && notificationState.mNotificationStyle != null &&
-                (notificationState.mNotificationStyle instanceof
-                        NotificationCompat.BigPictureStyle) &&
-                        (ContentType.isImageType(attachmentType) ||
-                                ContentType.isVideoType(attachmentType))) {
+        if (attachmentUri != null && (notificationState.mNotificationStyle instanceof
+                NotificationCompat.BigPictureStyle) &&
+                (ContentType.isImageType(attachmentType) ||
+                        ContentType.isVideoType(attachmentType))) {
             final boolean isVideo = ContentType.isVideoType(attachmentType);
 
             MediaRequest<ImageResource> imageRequest;
             if (isVideo) {
-                Assert.isTrue(VideoThumbnailRequest.shouldShowIncomingVideoThumbnails());
                 final MessagePartVideoThumbnailRequestDescriptor videoDescriptor =
                         new MessagePartVideoThumbnailRequestDescriptor(attachmentUri);
                 imageRequest = videoDescriptor.buildSyncMediaRequest(context);
@@ -732,20 +722,11 @@ public class BugleNotifications {
 
         final NotificationCompat.Builder notifBuilder = notificationState.mNotificationBuilder;
         notifBuilder.setStyle(notificationState.mNotificationStyle);
-        notifBuilder.setColor(context.getResources().getColor(R.color.notification_accent_color));
+        notifBuilder.setColor(context.getResources().getColor(R.color.notification_accent_color,
+                context.getTheme()));
 
         final WearableExtender wearableExtender = new WearableExtender();
         setWearableGroupOptions(notifBuilder, notificationState);
-
-        if (avatarHiResBitmap != null) {
-            wearableExtender.setBackground(avatarHiResBitmap);
-        } else if (avatarBitmap != null) {
-            // Nothing to do here; we already set avatarBitmap as the notification icon
-        } else {
-            final Bitmap defaultBackground = BitmapFactory.decodeResource(
-                    context.getResources(), R.drawable.bg_sms);
-            wearableExtender.setBackground(defaultBackground);
-        }
 
         if (notificationState instanceof MultiMessageNotificationState) {
             if (attachmentBitmap != null) {
@@ -764,29 +745,8 @@ public class BugleNotifications {
                     .bigPicture(attachmentBitmap)
                     .bigLargeIcon(avatarBitmap);
                 notificationState.mNotificationBuilder.setLargeIcon(smallBitmap);
-
-                // Add a wearable page with no visible card so you can more easily see the photo.
-                String conversationId = notificationState.mConversationIds.first();
-                String id = NotificationsUtil.DEFAULT_CHANNEL_ID;
-                if (NotificationsUtil.getNotificationChannel(context, conversationId) != null) {
-                    id = conversationId;
-                }
-                final NotificationCompat.Builder photoPageNotifBuilder =
-                        new NotificationCompat.Builder(Factory.get().getApplicationContext(),
-                        NotificationsUtil.DEFAULT_CHANNEL_ID);
-                final WearableExtender photoPageWearableExtender = new WearableExtender();
-                photoPageWearableExtender.setHintShowBackgroundOnly(true);
-                if (attachmentBitmap != null) {
-                    final Bitmap wearBitmap = ImageUtils.scaleCenterCrop(attachmentBitmap,
-                            sWearableImageWidth, sWearableImageHeight);
-                    photoPageWearableExtender.setBackground(wearBitmap);
-                }
-                photoPageNotifBuilder.extend(photoPageWearableExtender);
-                wearableExtender.addPage(photoPageNotifBuilder.build());
             }
 
-            maybeAddWearableConversationLog(wearableExtender,
-                    (MultiMessageNotificationState) notificationState);
             addDownloadMmsAction(notifBuilder, wearableExtender, notificationState);
             addWearableVoiceReplyAction(notifBuilder, wearableExtender, notificationState);
         }
@@ -811,22 +771,6 @@ public class BugleNotifications {
             // by the sort key, hence the need for zeroes to preserve the ordering.
             final String sortKey = String.format(Locale.US, "%02d", order);
             notifBuilder.setGroup(groupKey).setSortKey(sortKey);
-        }
-    }
-
-    private static void maybeAddWearableConversationLog(
-            final WearableExtender wearableExtender,
-            final MultiMessageNotificationState notificationState) {
-        if (!isWearCompanionAppInstalled()) {
-            return;
-        }
-        final String convId = notificationState.mConversationIds.first();
-        ConversationLineInfo convInfo = notificationState.mConvList.mConvInfos.get(0);
-        final Notification page = MessageNotificationState.buildConversationPageForWearable(
-                convId,
-                convInfo.mParticipantCount);
-        if (page != null) {
-            wearableExtender.addPage(page);
         }
     }
 
@@ -1087,12 +1031,7 @@ public class BugleNotifications {
                 OBSERVABLE_CONVERSATION_NOTIFICATION_VOLUME);
 
         // Stop the sound after five seconds to handle continuous ringtones
-        ThreadUtil.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                player.stop();
-            }
-        }, 5000);
+        ThreadUtil.getMainThreadHandler().postDelayed(player::stop, 5000);
     }
 
     public static boolean isWearCompanionAppInstalled() {

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +21,6 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.ActionBar;
 import android.text.Editable;
 import android.text.Html;
 import android.text.InputFilter;
@@ -38,6 +38,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+
 import com.android.messaging.Factory;
 import com.android.messaging.R;
 import com.android.messaging.datamodel.binding.Binding;
@@ -48,7 +51,6 @@ import com.android.messaging.datamodel.data.ConversationData.ConversationDataLis
 import com.android.messaging.datamodel.data.ConversationData.SimpleConversationDataListener;
 import com.android.messaging.datamodel.data.DraftMessageData;
 import com.android.messaging.datamodel.data.DraftMessageData.CheckDraftForSendTask;
-import com.android.messaging.datamodel.data.DraftMessageData.CheckDraftTaskCallback;
 import com.android.messaging.datamodel.data.DraftMessageData.DraftMessageDataListener;
 import com.android.messaging.datamodel.data.MessageData;
 import com.android.messaging.datamodel.data.MessagePartData;
@@ -67,7 +69,7 @@ import com.android.messaging.util.BuglePrefs;
 import com.android.messaging.util.ContentType;
 import com.android.messaging.util.LogUtil;
 import com.android.messaging.util.MediaUtil;
-import com.android.messaging.util.OsUtil;
+import com.android.messaging.util.PhoneUtils;
 import com.android.messaging.util.SafeAsyncTask;
 import com.android.messaging.util.UiUtils;
 import com.android.messaging.util.UriUtil;
@@ -88,7 +90,6 @@ public class ComposeMessageView extends LinearLayout
         void sendMessage(MessageData message);
         void onComposeEditTextFocused();
         void onAttachmentsCleared();
-        void onAttachmentsChanged(final boolean haveAttachments);
         void displayPhoto(Uri photoUri, Rect imageBounds, boolean isDraft);
         void promptForSelfPhoneNumber();
         boolean isReadyForAction();
@@ -190,24 +191,19 @@ public class ComposeMessageView extends LinearLayout
 
     @Override
     protected void onFinishInflate() {
+        super.onFinishInflate();
         mComposeEditText = (PlainTextEditText) findViewById(
                 R.id.compose_message_text);
         mComposeEditText.setOnEditorActionListener(this);
         mComposeEditText.addTextChangedListener(this);
-        mComposeEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(final View v, final boolean hasFocus) {
-                if (v == mComposeEditText && hasFocus) {
-                    mHost.onComposeEditTextFocused();
-                }
+        mComposeEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (v == mComposeEditText && hasFocus) {
+                mHost.onComposeEditTextFocused();
             }
         });
-        mComposeEditText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                if (mHost.shouldHideAttachmentsWhenSimSelectorShown()) {
-                    hideSimSelector();
-                }
+        mComposeEditText.setOnClickListener(arg0 -> {
+            if (mHost.shouldHideAttachmentsWhenSimSelectorShown()) {
+                hideSimSelector();
             }
         });
 
@@ -218,26 +214,20 @@ public class ComposeMessageView extends LinearLayout
                         .getMaxTextLimit()) });
 
         mSelfSendIcon = (SimIconView) findViewById(R.id.self_send_icon);
-        mSelfSendIcon.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mSelfSendIcon.setOnClickListener(v -> {
+            boolean shown = mInputManager.toggleSimSelector(true /* animate */,
+                    getSelfSubscriptionListEntry());
+            hideAttachmentsWhenShowingSims(shown);
+        });
+        mSelfSendIcon.setOnLongClickListener(v -> {
+            if (mHost.shouldShowSubjectEditor()) {
+                showSubjectEditor();
+            } else {
                 boolean shown = mInputManager.toggleSimSelector(true /* animate */,
                         getSelfSubscriptionListEntry());
                 hideAttachmentsWhenShowingSims(shown);
             }
-        });
-        mSelfSendIcon.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                if (mHost.shouldShowSubjectEditor()) {
-                    showSubjectEditor();
-                } else {
-                    boolean shown = mInputManager.toggleSimSelector(true /* animate */,
-                            getSelfSubscriptionListEntry());
-                    hideAttachmentsWhenShowingSims(shown);
-                }
-                return true;
-            }
+            return true;
         });
 
         mComposeSubjectText = (PlainTextEditText) findViewById(
@@ -252,39 +242,30 @@ public class ComposeMessageView extends LinearLayout
                         .getMaxSubjectLength())});
 
         mDeleteSubjectButton = (ImageButton) findViewById(R.id.delete_subject_button);
-        mDeleteSubjectButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(final View clickView) {
-                hideSubjectEditor();
-                mComposeSubjectText.setText(null);
-                mBinding.getData().setMessageSubject(null);
-            }
+        mDeleteSubjectButton.setOnClickListener(clickView -> {
+            hideSubjectEditor();
+            mComposeSubjectText.setText(null);
+            mBinding.getData().setMessageSubject(null);
         });
 
         mSubjectView = findViewById(R.id.subject_view);
 
         mSendButton = (ImageButton) findViewById(R.id.send_message_button);
-        mSendButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(final View clickView) {
-                sendMessageInternal(true /* checkMessageSize */);
+        mSendButton.setOnClickListener(clickView ->
+                sendMessageInternal(true /* checkMessageSize */));
+        mSendButton.setOnLongClickListener(arg0 -> {
+            boolean shown = mInputManager.toggleSimSelector(true /* animate */,
+                    getSelfSubscriptionListEntry());
+            hideAttachmentsWhenShowingSims(shown);
+            if (mHost.shouldShowSubjectEditor()) {
+                showSubjectEditor();
             }
-        });
-        mSendButton.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View arg0) {
-                boolean shown = mInputManager.toggleSimSelector(true /* animate */,
-                        getSelfSubscriptionListEntry());
-                hideAttachmentsWhenShowingSims(shown);
-                if (mHost.shouldShowSubjectEditor()) {
-                    showSubjectEditor();
-                }
-                return true;
-            }
+            return true;
         });
         mSendButton.setAccessibilityDelegate(new AccessibilityDelegate() {
             @Override
-            public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+            public void onPopulateAccessibilityEvent(@NonNull View host,
+                                                     @NonNull AccessibilityEvent event) {
                 super.onPopulateAccessibilityEvent(host, event);
                 // When the send button is long clicked, we want TalkBack to announce the real
                 // action (select SIM or edit subject), as opposed to "long press send button."
@@ -302,12 +283,9 @@ public class ComposeMessageView extends LinearLayout
 
         mAttachMediaButton =
                 (ImageButton) findViewById(R.id.attach_media_button);
-        mAttachMediaButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View clickView) {
-                // Showing the media picker is treated as starting to compose the message.
-                mInputManager.showHideMediaPicker(true /* show */, true /* animate */);
-            }
+        mAttachMediaButton.setOnClickListener(clickView -> {
+            // Showing the media picker is treated as starting to compose the message.
+            mInputManager.showHideMediaPicker(true /* show */, true /* animate */);
         });
 
         mAttachmentPreview = (AttachmentPreview) findViewById(R.id.attachment_draft_view);
@@ -323,10 +301,8 @@ public class ComposeMessageView extends LinearLayout
         }
         final boolean haveAttachments = mBinding.getData().hasAttachments();
         if (simPickerVisible && haveAttachments) {
-            mHost.onAttachmentsChanged(false);
             mAttachmentPreview.hideAttachmentPreview();
         } else {
-            mHost.onAttachmentsChanged(haveAttachments);
             mAttachmentPreview.onAttachmentsChanged(mBinding.getData());
         }
     }
@@ -345,14 +321,12 @@ public class ComposeMessageView extends LinearLayout
     }
 
     // returns true if it actually shows the subject editor and false if already showing
-    private boolean showSubjectEditor() {
+    private void showSubjectEditor() {
         // show the subject editor
         if (mSubjectView.getVisibility() == View.GONE) {
             mSubjectView.setVisibility(View.VISIBLE);
             mSubjectView.requestFocus();
-            return true;
         }
-        return false;
     }
 
     private void hideSubjectEditor() {
@@ -381,7 +355,8 @@ public class ComposeMessageView extends LinearLayout
             return;
         }
         // Check the host for pre-conditions about any action.
-        if (mHost.isReadyForAction()) {
+        if (mHost.isReadyForAction() && (mHost.getConversationSelfSubId() > 0
+                || PhoneUtils.getDefault().getHasPreferredSmsSim())) {
             mInputManager.showHideSimSelector(false /* show */, true /* animate */);
             final String messageToSend = mComposeEditText.getText().toString();
             mBinding.getData().setMessageText(messageToSend);
@@ -389,69 +364,60 @@ public class ComposeMessageView extends LinearLayout
             mBinding.getData().setMessageSubject(subject);
             // Asynchronously check the draft against various requirements before sending.
             mBinding.getData().checkDraftForAction(checkMessageSize,
-                    mHost.getConversationSelfSubId(), new CheckDraftTaskCallback() {
-                @Override
-                public void onDraftChecked(DraftMessageData data, int result) {
-                    mBinding.ensureBound(data);
-                    switch (result) {
-                        case CheckDraftForSendTask.RESULT_PASSED:
-                            // Continue sending after check succeeded.
-                            final MessageData message = mBinding.getData()
-                                    .prepareMessageForSending(mBinding);
-                            if (message != null && message.hasContent()) {
-                                playSentSound();
-                                mHost.sendMessage(message);
-                                hideSubjectEditor();
-                                if (AccessibilityUtil.isTouchExplorationEnabled(getContext())) {
-                                    AccessibilityUtil.announceForAccessibilityCompat(
-                                            ComposeMessageView.this, null,
-                                            R.string.sending_message);
+                    mHost.getConversationSelfSubId(), (data, result) -> {
+                        mBinding.ensureBound(data);
+                        switch (result) {
+                            case CheckDraftForSendTask.RESULT_PASSED:
+                                // Continue sending after check succeeded.
+                                final MessageData message = mBinding.getData()
+                                        .prepareMessageForSending(mBinding);
+                                if (message != null && message.hasContent()) {
+                                    playSentSound();
+                                    mHost.sendMessage(message);
+                                    hideSubjectEditor();
+                                    if (AccessibilityUtil.isTouchExplorationEnabled(getContext())) {
+                                        AccessibilityUtil.announceForAccessibilityCompat(
+                                                ComposeMessageView.this, null,
+                                                R.string.sending_message);
+                                    }
                                 }
-                            }
-                            break;
+                                break;
 
-                        case CheckDraftForSendTask.RESULT_HAS_PENDING_ATTACHMENTS:
-                            // Cannot send while there's still attachment(s) being loaded.
-                            UiUtils.showToastAtBottom(
-                                    R.string.cant_send_message_while_loading_attachments);
-                            break;
+                            case CheckDraftForSendTask.RESULT_HAS_PENDING_ATTACHMENTS:
+                                // Cannot send while there's still attachment(s) being loaded.
+                                UiUtils.showToastAtBottom(
+                                        R.string.cant_send_message_while_loading_attachments);
+                                break;
 
-                        case CheckDraftForSendTask.RESULT_NO_SELF_PHONE_NUMBER_IN_GROUP_MMS:
-                            mHost.promptForSelfPhoneNumber();
-                            break;
+                            case CheckDraftForSendTask.RESULT_NO_SELF_PHONE_NUMBER_IN_GROUP_MMS:
+                                mHost.promptForSelfPhoneNumber();
+                                break;
 
-                        case CheckDraftForSendTask.RESULT_MESSAGE_OVER_LIMIT:
-                            Assert.isTrue(checkMessageSize);
-                            mHost.warnOfExceedingMessageLimit(
-                                    true /*sending*/, false /* tooManyVideos */);
-                            break;
+                            case CheckDraftForSendTask.RESULT_MESSAGE_OVER_LIMIT:
+                                Assert.isTrue(checkMessageSize);
+                                mHost.warnOfExceedingMessageLimit(
+                                        true /*sending*/, false /* tooManyVideos */);
+                                break;
 
-                        case CheckDraftForSendTask.RESULT_VIDEO_ATTACHMENT_LIMIT_EXCEEDED:
-                            Assert.isTrue(checkMessageSize);
-                            mHost.warnOfExceedingMessageLimit(
-                                    true /*sending*/, true /* tooManyVideos */);
-                            break;
+                            case CheckDraftForSendTask.RESULT_VIDEO_ATTACHMENT_LIMIT_EXCEEDED:
+                                Assert.isTrue(checkMessageSize);
+                                mHost.warnOfExceedingMessageLimit(
+                                        true /*sending*/, true /* tooManyVideos */);
+                                break;
 
-                        case CheckDraftForSendTask.RESULT_SIM_NOT_READY:
-                            // Cannot send if there is no active subscription
-                            UiUtils.showToastAtBottom(
-                                    R.string.cant_send_message_without_active_subscription);
-                            break;
+                            case CheckDraftForSendTask.RESULT_SIM_NOT_READY:
+                                // Cannot send if there is no active subscription
+                                UiUtils.showToastAtBottom(
+                                        R.string.cant_send_message_without_active_subscription);
+                                break;
 
-                        default:
-                            break;
-                    }
-                }
-            }, mBinding);
-        } else {
-            mHost.warnOfMissingActionConditions(true /*sending*/,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            sendMessageInternal(checkMessageSize);
+                            default:
+                                break;
                         }
-
-            });
+                    }, mBinding);
+        } else {
+            mHost.warnOfMissingActionConditions(true /*sending*/, () ->
+                    sendMessageInternal(checkMessageSize));
         }
     }
 
@@ -504,8 +470,7 @@ public class ComposeMessageView extends LinearLayout
 
         if ((changeFlags & DraftMessageData.ATTACHMENTS_CHANGED) ==
                 DraftMessageData.ATTACHMENTS_CHANGED) {
-            final boolean haveAttachments = mAttachmentPreview.onAttachmentsChanged(data);
-            mHost.onAttachmentsChanged(haveAttachments);
+            mAttachmentPreview.onAttachmentsChanged(data);
             hasAttachmentsChanged = true;
         }
 
@@ -685,7 +650,7 @@ public class ComposeMessageView extends LinearLayout
                 mBinding.getData().hasAttachments();
 
         final List<MessagePartData> attachments =
-                new ArrayList<MessagePartData>(draftMessageData.getReadOnlyAttachments());
+                new ArrayList<>(draftMessageData.getReadOnlyAttachments());
         if (draftMessageData.getIsMms()) { // MMS case
             if (draftMessageData.hasAttachments()) {
                 if (hasAttachmentsChanged) {
@@ -767,7 +732,7 @@ public class ComposeMessageView extends LinearLayout
             } else {
                 mComposeEditText.setHint(Html.fromHtml(getResources().getString(
                         R.string.compose_message_view_hint_text_multi_sim,
-                        subscriptionListEntry.displayName)));
+                        subscriptionListEntry.displayName), Html.FROM_HTML_MODE_LEGACY));
             }
         } else {
             int type = -1;
@@ -865,18 +830,16 @@ public class ComposeMessageView extends LinearLayout
 
     // Set accessibility traversal order of the components in the send widget.
     private void setSendWidgetAccessibilityTraversalOrder(final int mode) {
-        if (OsUtil.isAtLeastL_MR1()) {
-            mAttachMediaButton.setAccessibilityTraversalBefore(R.id.compose_message_text);
-            switch (mode) {
-                case SEND_WIDGET_MODE_SIM_SELECTOR:
-                    mComposeEditText.setAccessibilityTraversalBefore(R.id.self_send_icon);
-                    break;
-                case SEND_WIDGET_MODE_SEND_BUTTON:
-                    mComposeEditText.setAccessibilityTraversalBefore(R.id.send_message_button);
-                    break;
-                default:
-                    break;
-            }
+        mAttachMediaButton.setAccessibilityTraversalBefore(R.id.compose_message_text);
+        switch (mode) {
+            case SEND_WIDGET_MODE_SIM_SELECTOR:
+                mComposeEditText.setAccessibilityTraversalBefore(R.id.self_send_icon);
+                break;
+            case SEND_WIDGET_MODE_SEND_BUTTON:
+                mComposeEditText.setAccessibilityTraversalBefore(R.id.send_message_button);
+                break;
+            default:
+                break;
         }
     }
 
@@ -977,8 +940,7 @@ public class ComposeMessageView extends LinearLayout
     }
 
     public static boolean shouldShowSimSelector(final ConversationData convData) {
-        return OsUtil.isAtLeastL_MR1() &&
-                convData.getSelfParticipantsCountExcludingDefault(true /* activeOnly */) > 1;
+        return convData.getSelfParticipantsCountExcludingDefault(true /* activeOnly */) > 1;
     }
 
     public void sendMessageIgnoreMessageSizeLimit() {

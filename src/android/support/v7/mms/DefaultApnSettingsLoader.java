@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +15,8 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms;
+package android.support.v7.mms;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -285,7 +285,7 @@ class DefaultApnSettingsLoader implements ApnSettingsLoader {
      */
     private void loadFromSystem(final int subId, final String apnName, final List<Apn> apns) {
         Uri uri;
-        if (Utils.supportMSim() && subId != MmsManager.DEFAULT_SUB_ID) {
+        if (subId != MmsManager.DEFAULT_SUB_ID) {
             uri = Uri.withAppendedPath(Telephony.Carriers.CONTENT_URI, "/subId/" + subId);
         } else {
             uri = Telephony.Carriers.CONTENT_URI;
@@ -399,39 +399,30 @@ class DefaultApnSettingsLoader implements ApnSettingsLoader {
             return;
         }
         // MCC/MNC is good, loading/querying APNs from XML
-        XmlResourceParser xml = null;
-        try {
-            xml = mContext.getResources().getXml(R.xml.apns);
-            new ApnsXmlParser(xml, new ApnsXmlParser.ApnProcessor() {
-                @Override
-                public void process(ContentValues apnValues) {
-                    final String mcc = trimWithNullCheck(apnValues.getAsString(APN_MCC));
-                    final String mnc = trimWithNullCheck(apnValues.getAsString(APN_MNC));
-                    final String apn = trimWithNullCheck(apnValues.getAsString(APN_APN));
-                    try {
-                        if (mccMnc[0] == Integer.parseInt(mcc) &&
-                                mccMnc[1] == Integer.parseInt(mnc) &&
-                                (TextUtils.isEmpty(apnName) || apnName.equalsIgnoreCase(apn))) {
-                            final String type = apnValues.getAsString(APN_TYPE);
-                            final String mmsc = apnValues.getAsString(APN_MMSC);
-                            final String mmsproxy = apnValues.getAsString(APN_MMSPROXY);
-                            final String mmsport = apnValues.getAsString(APN_MMSPORT);
-                            final Apn newApn = MemoryApn.from(apns, type, mmsc, mmsproxy, mmsport);
-                            if (newApn != null) {
-                                apns.add(newApn);
-                            }
+        try (XmlResourceParser xml = mContext.getResources().getXml(R.xml.apns)) {
+            new ApnsXmlParser(xml, apnValues -> {
+                final String mcc = trimWithNullCheck(apnValues.getAsString(APN_MCC));
+                final String mnc = trimWithNullCheck(apnValues.getAsString(APN_MNC));
+                final String apn = trimWithNullCheck(apnValues.getAsString(APN_APN));
+                try {
+                    if (mccMnc[0] == Integer.parseInt(mcc) &&
+                            mccMnc[1] == Integer.parseInt(mnc) &&
+                            (TextUtils.isEmpty(apnName) || apnName.equalsIgnoreCase(apn))) {
+                        final String type = apnValues.getAsString(APN_TYPE);
+                        final String mmsc = apnValues.getAsString(APN_MMSC);
+                        final String mmsproxy = apnValues.getAsString(APN_MMSPROXY);
+                        final String mmsport = apnValues.getAsString(APN_MMSPORT);
+                        final Apn newApn = MemoryApn.from(apns, type, mmsc, mmsproxy, mmsport);
+                        if (newApn != null) {
+                            apns.add(newApn);
                         }
-                    } catch (final NumberFormatException e) {
-                        // Ignore
                     }
+                } catch (final NumberFormatException e) {
+                    // Ignore
                 }
             }).parse();
         } catch (final Resources.NotFoundException e) {
             Log.w(MmsService.TAG, "Can not get apns.xml " + e);
-        } finally {
-            if (xml != null) {
-                xml.close();
-            }
         }
     }
 

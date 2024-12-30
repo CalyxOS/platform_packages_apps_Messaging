@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.mms.MmsManager;
+import android.support.v7.mms.MmsManager;
 import android.telephony.SmsManager;
 
 import com.android.messaging.datamodel.MmsFileProvider;
@@ -62,7 +63,6 @@ public class MmsSender {
      * @param context Context
      * @param messageUri The unique URI of the message for identifying it during sending
      * @param sendReq The SendReq PDU of the message
-     * @throws MmsFailureException
      */
     public static void sendMms(final Context context, final int subId, final Uri messageUri,
             final SendReq sendReq, final Bundle sentIntentExras) throws MmsFailureException {
@@ -83,8 +83,6 @@ public class MmsSender {
      * @param transactionId The transaction id of the MMS message
      * @param contentLocation The url of the MMS message
      * @param status The status to send with the NotifyRespInd
-     * @throws MmsFailureException
-     * @throws InvalidHeaderValueException
      */
     public static void sendNotifyResponseForMmsDownload(final Context context, final int subId,
             final byte[] transactionId, final String contentLocation, final int status)
@@ -110,8 +108,6 @@ public class MmsSender {
      * @param subId The SIM's subId we are currently using
      * @param transactionId The transaction id of the MMS message
      * @param contentLocation The url of the MMS message
-     * @throws MmsFailureException
-     * @throws InvalidHeaderValueException
      */
     public static void sendAcknowledgeForMmsDownload(final Context context, final int subId,
             final byte[] transactionId, final String contentLocation)
@@ -141,7 +137,6 @@ public class MmsSender {
      * @param pdu The PDU to send
      * @param responseImportant If the sending response is important. Responses to the
      * Sending of AcknowledgeInd and NotifyRespInd are not important.
-     * @throws MmsFailureException
      */
     private static void sendMms(final Context context, final int subId, final Uri messageUri,
             final String locationUrl, final GenericPdu pdu, final boolean responseImportant,
@@ -163,7 +158,7 @@ public class MmsSender {
                 context,
                 0 /*request code*/,
                 sentIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         // Send the message
         MmsManager.sendMultimediaMessage(subId, context, contentUri, locationUrl,
@@ -241,8 +236,6 @@ public class MmsSender {
      *
      * @param context Context
      * @param contentLocation The url of the MMS message
-     * @throws MmsFailureException
-     * @throws InvalidHeaderValueException
      */
     public static void downloadMms(final Context context, final int subId,
             final String contentLocation, Bundle extras) throws MmsFailureException,
@@ -262,7 +255,7 @@ public class MmsSender {
                 context,
                 0 /*request code*/,
                 downloadedIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         MmsManager.downloadMultimediaMessage(subId, context, contentLocation, contentUri,
                 downloadedPendingIntent);

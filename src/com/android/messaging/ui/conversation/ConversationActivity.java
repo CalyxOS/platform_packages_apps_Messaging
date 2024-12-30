@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +17,17 @@
 
 package com.android.messaging.ui.conversation;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.android.messaging.R;
 import com.android.messaging.datamodel.MessagingContentProvider;
@@ -39,7 +42,6 @@ import com.android.messaging.ui.conversationlist.ConversationListActivity;
 import com.android.messaging.util.Assert;
 import com.android.messaging.util.ContentType;
 import com.android.messaging.util.LogUtil;
-import com.android.messaging.util.OsUtil;
 import com.android.messaging.util.UiUtils;
 
 public class ConversationActivity extends BugleActionBarActivity
@@ -120,7 +122,7 @@ public class ConversationActivity extends BugleActionBarActivity
     }
 
     @Override
-    protected void onSaveInstanceState(final Bundle outState) {
+    protected void onSaveInstanceState(@NonNull final Bundle outState) {
         super.onSaveInstanceState(outState);
         // After onSaveInstanceState() is called, future changes to mUiState won't update the UI
         // anymore, because fragment transactions are not allowed past this point.
@@ -132,6 +134,15 @@ public class ConversationActivity extends BugleActionBarActivity
         // restored UI state ALWAYS matches the actual restored UI components.
         outState.putParcelable(SAVED_INSTANCE_STATE_UI_STATE_KEY, mUiState.clone());
         mInstanceStateSaved = true;
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        final ConversationFragment conversationFragment = getConversationFragment();
+        if (conversationFragment != null) {
+            conversationFragment.onRestart();
+        }
     }
 
     @Override
@@ -188,7 +199,7 @@ public class ConversationActivity extends BugleActionBarActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(final MenuItem menuItem) {
+    public boolean onOptionsItemSelected(@NonNull final MenuItem menuItem) {
         if (super.onOptionsItemSelected(menuItem)) {
             return true;
         }
@@ -225,12 +236,12 @@ public class ConversationActivity extends BugleActionBarActivity
     }
 
     private ContactPickerFragment getContactPicker() {
-        return (ContactPickerFragment) getFragmentManager().findFragmentByTag(
+        return (ContactPickerFragment) getSupportFragmentManager().findFragmentByTag(
                 ContactPickerFragment.FRAGMENT_TAG);
     }
 
-    private ConversationFragment getConversationFragment() {
-        return (ConversationFragment) getFragmentManager().findFragmentByTag(
+    public ConversationFragment getConversationFragment() {
+        return (ConversationFragment) getSupportFragmentManager().findFragmentByTag(
                 ConversationFragment.FRAGMENT_TAG);
     }
 
@@ -294,7 +305,7 @@ public class ConversationActivity extends BugleActionBarActivity
         final Intent intent = getIntent();
         final String conversationId = mUiState.getConversationId();
 
-        final FragmentManager fragmentManager = getFragmentManager();
+        final FragmentManager fragmentManager = getSupportFragmentManager();
         final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         final boolean needConversationFragment = mUiState.shouldShowConversationFragment();
@@ -348,33 +359,11 @@ public class ConversationActivity extends BugleActionBarActivity
     public void onFinishCurrentConversation() {
         // Simply finish the current activity. The current design is to leave any empty
         // conversations as is.
-        if (OsUtil.isAtLeastL()) {
-            finishAfterTransition();
-        } else {
-            finish();
-        }
+        finishAfterTransition();
     }
 
     @Override
     public boolean shouldResumeComposeMessage() {
         return mUiState.shouldResumeComposeMessage();
-    }
-
-    @SuppressWarnings("MissingSuperCall") // TODO: fix me
-    @Override
-    protected void onActivityResult(final int requestCode, final int resultCode,
-            final Intent data) {
-        if (requestCode == ConversationFragment.REQUEST_CHOOSE_ATTACHMENTS &&
-                resultCode == RESULT_OK) {
-            final ConversationFragment conversationFragment = getConversationFragment();
-            if (conversationFragment != null) {
-                conversationFragment.onAttachmentChoosen();
-            } else {
-                LogUtil.e(LogUtil.BUGLE_TAG, "ConversationFragment is missing after launching " +
-                        "AttachmentChooserActivity!");
-            }
-        } else if (resultCode == FINISH_RESULT_CODE) {
-            finish();
-        }
     }
 }

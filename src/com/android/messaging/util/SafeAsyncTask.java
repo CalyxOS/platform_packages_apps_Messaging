@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +43,7 @@ public abstract class SafeAsyncTask<Params, Progress, Result>
 
     private static final String WAKELOCK_ID = "bugle_safe_async_task_wakelock";
     protected static final int WAKELOCK_OP = 1000;
-    private static WakeLockHelper sWakeLock = new WakeLockHelper(WAKELOCK_ID);
+    private static final WakeLockHelper sWakeLock = new WakeLockHelper(WAKELOCK_ID);
 
     private final long mMaxExecutionTimeMillis;
     private final boolean mCancelExecutionOnTimeout;
@@ -95,15 +96,12 @@ public abstract class SafeAsyncTask<Params, Progress, Result>
         Assert.isTrue(mThreadPoolRequested);
 
         if (mCancelExecutionOnTimeout) {
-            ThreadUtil.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (getStatus() == Status.RUNNING) {
-                        // Cancel the task if it's still running.
-                        LogUtil.w(LogUtil.BUGLE_TAG, String.format("%s timed out and is canceled",
-                                this));
-                        cancel(true /* mayInterruptIfRunning */);
-                    }
+            ThreadUtil.getMainThreadHandler().postDelayed(() -> {
+                if (getStatus() == Status.RUNNING) {
+                    // Cancel the task if it's still running.
+                    LogUtil.w(LogUtil.BUGLE_TAG, String.format("%s timed out and is canceled",
+                            this));
+                    cancel(true /* mayInterruptIfRunning */);
                 }
             }, mMaxExecutionTimeMillis);
         }
@@ -159,14 +157,11 @@ public abstract class SafeAsyncTask<Params, Progress, Result>
         if (withWakeLock) {
             final Intent intent = new Intent();
             sWakeLock.acquire(Factory.get().getApplicationContext(), intent, WAKELOCK_OP);
-            THREAD_POOL_EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        runnable.run();
-                    } finally {
-                        sWakeLock.release(intent, WAKELOCK_OP);
-                    }
+            THREAD_POOL_EXECUTOR.execute(() -> {
+                try {
+                    runnable.run();
+                } finally {
+                    sWakeLock.release(intent, WAKELOCK_OP);
                 }
             });
         } else {

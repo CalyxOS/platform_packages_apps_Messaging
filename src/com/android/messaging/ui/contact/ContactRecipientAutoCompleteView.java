@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +18,9 @@ package com.android.messaging.ui.contact;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.Editable;
 import android.text.TextPaint;
@@ -28,6 +31,10 @@ import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.android.ex.chips.RecipientEditTextView;
 import com.android.ex.chips.RecipientEntry;
@@ -56,7 +63,6 @@ public class ContactRecipientAutoCompleteView extends RecipientEditTextView {
         void onEntryComplete();
     }
 
-    private final int mTextHeight;
     private ContactChipsChangeListener mChipsChangeListener;
 
     /**
@@ -107,14 +113,18 @@ public class ContactRecipientAutoCompleteView extends RecipientEditTextView {
         final Rect textBounds = new Rect(0, 0, 0, 0);
         final TextPaint paint = getPaint();
         paint.getTextBounds(TEXT_HEIGHT_SAMPLE, 0, TEXT_HEIGHT_SAMPLE.length(), textBounds);
-        mTextHeight = textBounds.height();
 
         setTokenizer(new Rfc822Tokenizer());
         addTextChangedListener(new ContactChipsWatcher());
         setOnFocusListShrinkRecipients(false);
 
-        setBackground(context.getResources().getDrawable(
-                androidx.appcompat.R.drawable.abc_textfield_search_default_mtrl_alpha));
+        Drawable drawable = ResourcesCompat.getDrawable(context.getResources(),
+                androidx.appcompat.R.drawable.abc_textfield_search_default_mtrl_alpha,
+                context.getTheme());
+        int drawableColor = ContextCompat.getColor(context, android.R.color.white);
+        DrawableCompat.setTint(drawable.mutate(), drawableColor);
+
+        setBackground(drawable);
     }
 
     public void setContactChipsListener(final ContactChipsChangeListener listener) {
@@ -255,8 +265,7 @@ public class ContactRecipientAutoCompleteView extends RecipientEditTextView {
     public ArrayList<ParticipantData> getRecipientParticipantDataForConversationCreation() {
         final DrawableRecipientChip[] recips = getText()
                 .getSpans(0, getText().length(), DrawableRecipientChip.class);
-        final ArrayList<ParticipantData> contacts =
-                new ArrayList<ParticipantData>(recips.length);
+        final ArrayList<ParticipantData> contacts = new ArrayList<>(recips.length);
         for (final DrawableRecipientChip recipient : recips) {
             final RecipientEntry entry = recipient.getEntry();
             if (entry != null && entry.isValid() && entry.getDestination() != null &&
@@ -273,7 +282,7 @@ public class ContactRecipientAutoCompleteView extends RecipientEditTextView {
      * consumer with determining quickly whether a contact is currently selected.
      */
     public Set<String> getSelectedDestinations() {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         final DrawableRecipientChip[] recips = getText()
                 .getSpans(0, getText().length(), DrawableRecipientChip.class);
 

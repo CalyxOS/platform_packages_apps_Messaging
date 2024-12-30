@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +73,7 @@ class SyncMessageBatch {
         mMmsToAdd = mmsToAdd;
         mMessagesToDelete = messagesToDelete;
         mCache = cache;
-        mConversationsToUpdate = new HashSet<String>();
+        mConversationsToUpdate = new HashSet<>();
     }
 
     void updateLocalDatabase() {
@@ -123,8 +124,6 @@ class SyncMessageBatch {
 
     /**
      * Store the SMS message into local database.
-     *
-     * @param sms
      */
     private void storeSms(final DatabaseWrapper db, final SmsMessage sms) {
         if (sms.mBody == null) {
@@ -224,8 +223,6 @@ class SyncMessageBatch {
 
     /**
      * Store the MMS message into local database
-     *
-     * @param mms
      */
     private void storeMms(final DatabaseWrapper db, final MmsMessage mms) {
         if (mms.mParts.size() < 1) {
@@ -298,20 +295,14 @@ class SyncMessageBatch {
         // with those details.
 
         String foundConversationId = null;
-        Cursor cursor = null;
-        try {
+        try (Cursor cursor = db.rawQuery("SELECT " + ConversationColumns._ID
+                        + " FROM " + DatabaseHelper.CONVERSATIONS_TABLE
+                        + " WHERE " + ConversationColumns._ID + "=" + conversationId,
+                null)) {
             // Look for an existing conversation in the db with the conversation id
-            cursor = db.rawQuery("SELECT " + ConversationColumns._ID
-                    + " FROM " + DatabaseHelper.CONVERSATIONS_TABLE
-                    + " WHERE " + ConversationColumns._ID + "=" + conversationId,
-                    null);
             if (cursor != null && cursor.moveToFirst()) {
                 Assert.isTrue(cursor.getCount() == 1);
                 foundConversationId = cursor.getString(0);
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
             }
         }
 
@@ -354,9 +345,6 @@ class SyncMessageBatch {
      * Batch delete database rows by matching a column with a list of values, usually some
      * kind of IDs.
      *
-     * @param table
-     * @param column
-     * @param ids
      * @return Total number of deleted messages
      */
     private static int batchDelete(final DatabaseWrapper db, final String table,
