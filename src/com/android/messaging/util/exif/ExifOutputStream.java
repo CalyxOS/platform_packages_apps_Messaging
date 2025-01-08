@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,7 +243,7 @@ class ExifOutputStream extends FilterOutputStream {
     }
 
     private ArrayList<ExifTag> stripNullValueTags(ExifData data) {
-        ArrayList<ExifTag> nullTags = new ArrayList<ExifTag>();
+        ArrayList<ExifTag> nullTags = new ArrayList<>();
         if (data.getAllTags() == null) {
             return nullTags;
         }
@@ -291,7 +292,7 @@ class ExifOutputStream extends FilterOutputStream {
             dataOutputStream.writeShort(tag.getDataType());
             dataOutputStream.writeInt(tag.getComponentCount());
             if (DEBUG) {
-                Log.v(TAG, "\n" + tag.toString());
+                Log.v(TAG, "\n" + tag);
             }
             if (tag.getDataSize() > 4) {
                 dataOutputStream.writeInt(tag.getOffset());
@@ -485,7 +486,7 @@ class ExifOutputStream extends FilterOutputStream {
             throws IOException {
         switch (tag.getDataType()) {
             case ExifTag.TYPE_ASCII:
-                byte buf[] = tag.getStringByte();
+                byte[] buf = tag.getStringByte();
                 if (buf.length == tag.getComponentCount()) {
                     buf[buf.length - 1] = 0;
                     dataOutputStream.write(buf);

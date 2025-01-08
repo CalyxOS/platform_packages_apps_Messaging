@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,6 @@
  */
 package com.android.messaging.ui;
 
-import android.app.Fragment;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,11 +25,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 import com.android.messaging.R;
 import com.android.messaging.datamodel.DataModel;
@@ -73,34 +74,27 @@ public class VCardDetailFragment extends Fragment implements PersonItemDataListe
         Assert.notNull(mVCardUri);
         final View view = inflater.inflate(R.layout.vcard_detail_fragment, container, false);
         mListView = (ExpandableListView) view.findViewById(R.id.list);
-        mListView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(final View v, final int left, final int top, final int right,
-                    final int bottom, final int oldLeft, final int oldTop, final int oldRight,
-                    final int oldBottom) {
-                mListView.setIndicatorBounds(mListView.getWidth() - getResources()
-                        .getDimensionPixelSize(R.dimen.vcard_detail_group_indicator_width),
-                        mListView.getWidth());
-            }
+        mListView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight,
+                                             oldBottom) -> {
+            mListView.setIndicatorBounds(mListView.getWidth() - getResources().
+                            getDimensionPixelSize(R.dimen.vcard_detail_group_indicator_width),
+                    mListView.getWidth());
         });
-        mListView.setOnChildClickListener(new OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView expandableListView, View clickedView,
-                    int groupPosition, int childPosition, long childId) {
-                if (!(clickedView instanceof PersonItemView)) {
-                    return false;
-                }
-                final Intent intent = ((PersonItemView) clickedView).getClickIntent();
-                if (intent != null) {
-                    try {
-                        startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
-                        return false;
-                    }
-                    return true;
-                }
+        mListView.setOnChildClickListener((expandableListView, clickedView, groupPosition,
+                                           childPosition, childId) -> {
+            if (!(clickedView instanceof PersonItemView)) {
                 return false;
             }
+            final Intent intent = ((PersonItemView) clickedView).getClickIntent();
+            if (intent != null) {
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    return false;
+                }
+                return true;
+            }
+            return false;
         });
         mBinding.bind(DataModel.get().createVCardContactItemData(getActivity(), mVCardUri));
         mBinding.getData().setListener(this);
@@ -121,7 +115,8 @@ public class VCardDetailFragment extends Fragment implements PersonItemDataListe
     }
 
     @Override
-    public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu,
+                                    @NonNull final MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.vcard_detail_fragment_menu, menu);
         final MenuItem addToContactsItem = menu.findItem(R.id.action_add_contact);
@@ -130,41 +125,38 @@ public class VCardDetailFragment extends Fragment implements PersonItemDataListe
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add_contact:
-                mBinding.ensureBound();
-                final Uri vCardUri = mBinding.getData().getVCardUri();
+        if (item.getItemId() == R.id.action_add_contact) {
+            mBinding.ensureBound();
+            final Uri vCardUri = mBinding.getData().getVCardUri();
 
-                // We have to do things in the background in case we need to copy the vcard data.
-                new SafeAsyncTask<Void, Void, Uri>() {
-                    @Override
-                    protected Uri doInBackgroundTimed(final Void... params) {
-                        // We can't delete the persisted vCard file because we don't know when to
-                        // delete it, since the app that uses it (contacts, dialer) may start or
-                        // shut down at any point. Therefore, we rely on the system to clean up
-                        // the cache directory for us.
-                        return mScratchSpaceUri != null ? mScratchSpaceUri :
+            // We have to do things in the background in case we need to copy the vcard data.
+            new SafeAsyncTask<Void, Void, Uri>() {
+                @Override
+                protected Uri doInBackgroundTimed(final Void... params) {
+                    // We can't delete the persisted vCard file because we don't know when to
+                    // delete it, since the app that uses it (contacts, dialer) may start or
+                    // shut down at any point. Therefore, we rely on the system to clean up
+                    // the cache directory for us.
+                    return mScratchSpaceUri != null ? mScratchSpaceUri :
                             UriUtil.persistContentToScratchSpace(vCardUri);
-                    }
+                }
 
-                    @Override
-                    protected void onPostExecute(final Uri result) {
-                        if (result != null) {
-                            mScratchSpaceUri = result;
-                            if (getActivity() != null) {
-                                MediaScratchFileProvider.addUriToDisplayNameEntry(
-                                        result, mBinding.getData().getDisplayName());
-                                UIIntents.get().launchSaveVCardToContactsActivity(getActivity(),
-                                        result);
-                            }
+                @Override
+                protected void onPostExecute(final Uri result) {
+                    if (result != null) {
+                        mScratchSpaceUri = result;
+                        if (getActivity() != null) {
+                            MediaScratchFileProvider.addUriToDisplayNameEntry(
+                                    result, mBinding.getData().getDisplayName());
+                            UIIntents.get().launchSaveVCardToContactsActivity(getActivity(),
+                                    result);
                         }
                     }
-                }.executeOnThreadPool();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+                }
+            }.executeOnThreadPool();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     public void setVCardUri(final Uri vCardUri) {

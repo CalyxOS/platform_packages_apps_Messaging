@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +39,6 @@ class ExifReader {
     /**
      * Parses the inputStream and and returns the EXIF data in an
      * {@link ExifData}.
-     *
-     * @throws ExifInvalidFormatException
-     * @throws java.io.IOException
      */
     protected ExifData read(InputStream inputStream) throws ExifInvalidFormatException,
             IOException {
@@ -70,7 +68,7 @@ class ExifReader {
                     exifData.getIfdData(tag.getIfd()).setTag(tag);
                     break;
                 case ExifParser.EVENT_COMPRESSED_IMAGE:
-                    byte buf[] = new byte[parser.getCompressedImageSize()];
+                    byte[] buf = new byte[parser.getCompressedImageSize()];
                     if (buf.length == parser.read(buf)) {
                         exifData.setCompressedThumbnail(buf);
                     } else {

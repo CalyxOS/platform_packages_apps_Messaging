@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007-2008 Esmertec AG.
  * Copyright (C) 2007-2008 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -206,13 +207,6 @@ public class PduParser {
                     // or "application/vnd.wap.multipart.related"
                     // or "application/vnd.wap.multipart.alternative"
                     return retrieveConf;
-                } else if (ctTypeStr.equals(ContentType.MMS_MULTIPART_ALTERNATIVE)) {
-                    // "application/vnd.wap.multipart.alternative"
-                    // should take only the first part.
-                    PduPart firstPart = mBody.getPart(0);
-                    mBody.removeAll();
-                    mBody.addPart(0, firstPart);
-                    return retrieveConf;
                 }
                 return null;
             case PduHeaders.MESSAGE_TYPE_DELIVERY_IND:
@@ -335,7 +329,7 @@ public class PduParser {
                 case PduHeaders.CONTENT_CLASS:
                 case PduHeaders.RETRIEVE_STATUS:
                 case PduHeaders.STORE_STATUS:
-                    /**
+                    /*
                      * The following field has a different value when
                      * used in the M-Mbox-Delete.conf and M-Delete.conf PDU.
                      * For now we ignore this fact, since we do not support these PDUs
@@ -405,7 +399,7 @@ public class PduParser {
                 case PduHeaders.AUX_APPLIC_ID:
                 case PduHeaders.APPLIC_ID:
                 case PduHeaders.REPLY_APPLIC_ID:
-                    /**
+                    /*
                      * The next three header fields are email addresses
                      * as defined in RFC2822,
                      * not including the characters "<" and ">"
@@ -413,7 +407,7 @@ public class PduParser {
                 case PduHeaders.MESSAGE_ID:
                 case PduHeaders.REPLACE_ID:
                 case PduHeaders.CANCEL_ID:
-                    /**
+                    /*
                      * The following field has a different value when
                      * used in the M-Mbox-Delete.conf and M-Delete.conf PDU.
                      * For now we ignore this fact, since we do not support these PDUs
@@ -811,7 +805,7 @@ public class PduParser {
                 }
 
                 case PduHeaders.CONTENT_TYPE: {
-                    SparseArray<Object> map = new SparseArray<Object>();
+                    SparseArray<Object> map = new SparseArray<>();
                     byte[] contentType =
                             parseContentType(pduDataStream, map);
 
@@ -882,7 +876,7 @@ public class PduParser {
             }
 
             /* parse part's content-type */
-            SparseArray<Object> map = new SparseArray<Object>();
+            SparseArray<Object> map = new SparseArray<>();
             byte[] contentType = parseContentType(pduDataStream, map);
             if (null != contentType) {
                 part.setContentType(contentType);

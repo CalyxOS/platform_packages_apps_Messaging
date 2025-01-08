@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@ public class CustomVCardEntryConstructor implements VCardInterpreter {
         /**
          * Called when the parsing started.
          */
-        public void onStart();
+        void onStart();
 
         /**
          * The method called when one vCard entry is created. Children come before their parent in
@@ -46,25 +47,25 @@ public class CustomVCardEntryConstructor implements VCardInterpreter {
          * END:VCARD
          * </code>
          */
-        public void onEntryCreated(final CustomVCardEntry entry);
+        void onEntryCreated(final CustomVCardEntry entry);
 
         /**
          * Called when the parsing ended.
          * Able to be use this method for showing performance log, etc.
          */
-        public void onEnd();
+        void onEnd();
     }
 
     /**
      * Represents current stack of VCardEntry. Used to support nested vCard (vCard 2.1).
      */
-    private final List<CustomVCardEntry> mEntryStack = new ArrayList<CustomVCardEntry>();
+    private final List<CustomVCardEntry> mEntryStack = new ArrayList<>();
     private CustomVCardEntry mCurrentEntry;
 
     private final int mVCardType;
     private final Account mAccount;
 
-    private final List<EntryHandler> mEntryHandlers = new ArrayList<EntryHandler>();
+    private final List<EntryHandler> mEntryHandlers = new ArrayList<>();
 
     public CustomVCardEntryConstructor() {
         this(VCardConfig.VCARD_TYPE_V21_GENERIC, null);

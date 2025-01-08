@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +35,6 @@ import com.android.messaging.datamodel.data.ParticipantData;
 import com.android.messaging.ui.ContactIconView;
 import com.android.messaging.util.Assert;
 import com.android.messaging.util.AvatarUriUtil;
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * The view for a single entry in a contact list.
@@ -45,7 +45,6 @@ public class ContactListItemView extends LinearLayout implements OnClickListener
         boolean isContactSelected(ContactListItemData item);
     }
 
-    @VisibleForTesting
     final ContactListItemData mData;
     private TextView mContactNameTextView;
     private TextView mContactDetailsTextView;
@@ -64,6 +63,7 @@ public class ContactListItemView extends LinearLayout implements OnClickListener
 
     @Override
     protected void onFinishInflate () {
+        super.onFinishInflate();
         mContactNameTextView = (TextView) findViewById(R.id.contact_name);
         mContactDetailsTextView = (TextView) findViewById(R.id.contact_details);
         mContactDetailTypeTextView = (TextView) findViewById(R.id.contact_detail_type);

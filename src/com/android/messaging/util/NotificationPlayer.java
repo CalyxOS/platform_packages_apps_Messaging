@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@
 package com.android.messaging.util;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -25,9 +27,12 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
+
 import com.android.messaging.Factory;
 
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * This class is provides the same interface and functionality as android.media.AsyncPlayer
@@ -53,6 +58,7 @@ public class NotificationPlayer implements OnCompletionListener {
         long requestTime;
         boolean releaseFocus;
 
+        @NonNull
         @Override
         public String toString() {
             return "{ code=" + code + " looping=" + looping + " stream=" + stream
@@ -60,7 +66,7 @@ public class NotificationPlayer implements OnCompletionListener {
         }
     }
 
-    private final LinkedList<Command> mCmdQueue = new LinkedList<Command>();
+    private final LinkedList<Command> mCmdQueue = new LinkedList<>();
 
     private Looper mLooper;
 
@@ -71,7 +77,7 @@ public class NotificationPlayer implements OnCompletionListener {
      * be created with a looper running so its event handler is not null.
      */
     private final class CreationAndCompletionThread extends Thread {
-        public Command mCmd;
+        public final Command mCmd;
         public CreationAndCompletionThread(final Command cmd) {
             super();
             mCmd = cmd;
@@ -87,7 +93,9 @@ public class NotificationPlayer implements OnCompletionListener {
                         .getSystemService(Context.AUDIO_SERVICE);
                 try {
                     final MediaPlayer player = new MediaPlayer();
-                    player.setAudioStreamType(mCmd.stream);
+                    AudioAttributes.Builder attributes = new AudioAttributes.Builder();
+                    attributes.setLegacyStreamType(mCmd.stream);
+                    player.setAudioAttributes(attributes.build());
                     player.setDataSource(Factory.get().getApplicationContext(), mCmd.uri);
                     player.setLooping(mCmd.looping);
                     player.setVolume(mCmd.volume, mCmd.volume);
@@ -235,7 +243,7 @@ public class NotificationPlayer implements OnCompletionListener {
         }
     }
 
-    private String mTag;
+    private final String mTag;
     private CmdThread mThread;
     private CreationAndCompletionThread mCompletionThread;
     private final Object mCompletionHandlingLock = new Object();
@@ -253,11 +261,7 @@ public class NotificationPlayer implements OnCompletionListener {
      * @param tag a string to use for debugging
      */
     public NotificationPlayer(final String tag) {
-        if (tag != null) {
-            mTag = tag;
-        } else {
-            mTag = "NotificationPlayer";
-        }
+        mTag = Objects.requireNonNullElse(tag, "NotificationPlayer");
     }
 
     /**

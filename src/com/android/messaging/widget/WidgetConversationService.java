@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +44,6 @@ import com.android.messaging.datamodel.media.MediaResourceManager;
 import com.android.messaging.datamodel.media.MessagePartImageRequestDescriptor;
 import com.android.messaging.datamodel.media.MessagePartVideoThumbnailRequestDescriptor;
 import com.android.messaging.datamodel.media.UriImageRequestDescriptor;
-import com.android.messaging.datamodel.media.VideoThumbnailRequest;
 import com.android.messaging.sms.MmsUtils;
 import com.android.messaging.ui.UIIntents;
 import com.android.messaging.util.AvatarUriUtil;
@@ -72,7 +72,7 @@ public class WidgetConversationService extends RemoteViewsService {
      */
     private static class WidgetConversationFactory extends BaseWidgetFactory {
         private ImageResource mImageResource;
-        private String mConversationId;
+        private final String mConversationId;
 
         public WidgetConversationFactory(Context context, Intent intent) {
             super(context, intent);
@@ -107,7 +107,7 @@ public class WidgetConversationService extends RemoteViewsService {
             }
             final Uri uri = MessagingContentProvider.buildConversationMessagesUri(mConversationId);
             if (uri != null) {
-                LogUtil.w(TAG, "doQuery uri: " + uri.toString());
+                LogUtil.w(TAG, "doQuery uri: " + uri);
             }
             return mContext.getContentResolver().query(uri,
                     ConversationMessageData.getProjection(),
@@ -179,9 +179,7 @@ public class WidgetConversationService extends RemoteViewsService {
                 if (message.hasAttachments()) {
                     final List<MessagePartData> attachments = message.getAttachments();
                     for (MessagePartData part : attachments) {
-                        final boolean videoWithThumbnail = part.isVideo()
-                                && (VideoThumbnailRequest.shouldShowIncomingVideoThumbnails()
-                                || !message.getIsIncoming());
+                        final boolean videoWithThumbnail = part.isVideo();
                         if (part.isImage() || videoWithThumbnail) {
                             final Uri uri = part.getContentUri();
                             remoteViews.setViewVisibility(R.id.attachmentFrame, View.VISIBLE);
@@ -215,19 +213,14 @@ public class WidgetConversationService extends RemoteViewsService {
                         intent);
 
                 // Avatar
-                boolean includeAvatar;
-                if (OsUtil.isAtLeastJB()) {
-                    final Bundle options = mAppWidgetManager.getAppWidgetOptions(mAppWidgetId);
-                    if (LogUtil.isLoggable(TAG, LogUtil.VERBOSE)) {
-                        LogUtil.v(TAG, "getViewAt BugleWidgetProvider.WIDGET_SIZE_KEY: " +
-                                options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY));
-                    }
-
-                    includeAvatar = options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY)
-                            == BugleWidgetProvider.SIZE_LARGE;
-                } else {
-                    includeAvatar = true;
+                final Bundle options = mAppWidgetManager.getAppWidgetOptions(mAppWidgetId);
+                if (LogUtil.isLoggable(TAG, LogUtil.VERBOSE)) {
+                    LogUtil.v(TAG, "getViewAt BugleWidgetProvider.WIDGET_SIZE_KEY: " +
+                            options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY));
                 }
+
+                boolean includeAvatar = options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY)
+                        == BugleWidgetProvider.SIZE_LARGE;
 
                 // Show the avatar (and shadow) when grande size, otherwise hide it.
                 remoteViews.setViewVisibility(R.id.avatarView, includeAvatar ?
@@ -395,7 +388,8 @@ public class WidgetConversationService extends RemoteViewsService {
                 final Spannable colorStr = new SpannableString(statusText);
                 if (showInRed) {
                     colorStr.setSpan(new ForegroundColorSpan(
-                            mContext.getResources().getColor(R.color.timestamp_text_failed)),
+                            mContext.getResources().getColor(R.color.timestamp_text_failed,
+                                    mContext.getTheme())),
                             0, statusText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
                 remoteViews.setTextViewText(R.id.date, colorStr);

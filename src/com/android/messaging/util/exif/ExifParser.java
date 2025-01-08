@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -140,7 +142,7 @@ public class ExifParser {
     protected static final int TAG_SIZE = 12;
     protected static final int OFFSET_SIZE = 2;
 
-    private static final Charset US_ASCII = Charset.forName("US-ASCII");
+    private static final Charset US_ASCII = StandardCharsets.US_ASCII;
 
     protected static final int DEFAULT_IFD0_OFFSET = 8;
 
@@ -177,7 +179,7 @@ public class ExifParser {
     private static final short TAG_STRIP_BYTE_COUNTS = ExifInterface
             .getTrueTagKey(ExifInterface.TAG_STRIP_BYTE_COUNTS);
 
-    private final TreeMap<Integer, Object> mCorrespondingEvent = new TreeMap<Integer, Object>();
+    private final TreeMap<Integer, Object> mCorrespondingEvent = new TreeMap<>();
 
     private boolean isIfdRequested(int ifdType) {
         switch (ifdType) {
@@ -233,9 +235,6 @@ public class ExifParser {
 
     /**
      * Parses the the given InputStream with the given options
-     *
-     * @exception java.io.IOException
-     * @exception ExifInvalidFormatException
      */
     protected static ExifParser parse(InputStream inputStream, int options, ExifInterface iRef)
             throws IOException, ExifInvalidFormatException {
@@ -246,8 +245,6 @@ public class ExifParser {
      * Parses the the given InputStream with default options; that is, every IFD
      * and thumbnaill will be parsed.
      *
-     * @exception java.io.IOException
-     * @exception ExifInvalidFormatException
      * @see #parse(java.io.InputStream, int)
      */
     protected static ExifParser parse(InputStream inputStream, ExifInterface iRef)
@@ -260,8 +257,6 @@ public class ExifParser {
     /**
      * Moves the parser forward and returns the next parsing event
      *
-     * @exception java.io.IOException
-     * @exception ExifInvalidFormatException
      * @see #EVENT_START_OF_IFD
      * @see #EVENT_NEW_TAG
      * @see #EVENT_VALUE_OF_REGISTERED_TAG
@@ -357,9 +352,6 @@ public class ExifParser {
     /**
      * Skips the tags area of current IFD, if the parser is not in the tag area,
      * nothing will happen.
-     *
-     * @throws java.io.IOException
-     * @throws ExifInvalidFormatException
      */
     protected void skipRemainingTagsInCurrentIfd() throws IOException, ExifInvalidFormatException {
         int endOfTags = mIfdStartOffset + OFFSET_SIZE + TAG_SIZE * mNumOfTagInIfd;
@@ -658,22 +650,22 @@ public class ExifParser {
                     Object event = mCorrespondingEvent.firstEntry().getValue();
                     if (event instanceof ImageEvent) {
                         // Tag value overlaps thumbnail, ignore thumbnail.
-                        Log.w(TAG, "Thumbnail overlaps value for tag: \n" + tag.toString());
+                        Log.w(TAG, "Thumbnail overlaps value for tag: \n" + tag);
                         Entry<Integer, Object> entry = mCorrespondingEvent.pollFirstEntry();
                         Log.w(TAG, "Invalid thumbnail offset: " + entry.getKey());
                     } else {
                         // Tag value overlaps another tag, shorten count
                         if (event instanceof IfdEvent) {
                             Log.w(TAG, "Ifd " + ((IfdEvent) event).ifd
-                                    + " overlaps value for tag: \n" + tag.toString());
+                                    + " overlaps value for tag: \n" + tag);
                         } else if (event instanceof ExifTagEvent) {
                             Log.w(TAG, "Tag value for tag: \n"
                                     + ((ExifTagEvent) event).tag.toString()
-                                    + " overlaps value for tag: \n" + tag.toString());
+                                    + " overlaps value for tag: \n" + tag);
                         }
                         size = mCorrespondingEvent.firstEntry().getKey()
                                 - mTiffStream.getReadByteCount();
-                        Log.w(TAG, "Invalid size of tag: \n" + tag.toString()
+                        Log.w(TAG, "Invalid size of tag: \n" + tag
                                 + " setting count to: " + size);
                         tag.forceSetComponentCount(size);
                     }
@@ -683,7 +675,7 @@ public class ExifParser {
         switch (tag.getDataType()) {
             case ExifTag.TYPE_UNSIGNED_BYTE:
             case ExifTag.TYPE_UNDEFINED: {
-                byte buf[] = new byte[tag.getComponentCount()];
+                byte[] buf = new byte[tag.getComponentCount()];
                 read(buf);
                 tag.setValue(buf);
             }
@@ -692,7 +684,7 @@ public class ExifParser {
                 tag.setValue(readString(tag.getComponentCount()));
                 break;
             case ExifTag.TYPE_UNSIGNED_LONG: {
-                long value[] = new long[tag.getComponentCount()];
+                long[] value = new long[tag.getComponentCount()];
                 for (int i = 0, n = value.length; i < n; i++) {
                     value[i] = readUnsignedLong();
                 }
@@ -700,7 +692,7 @@ public class ExifParser {
             }
                 break;
             case ExifTag.TYPE_UNSIGNED_RATIONAL: {
-                Rational value[] = new Rational[tag.getComponentCount()];
+                Rational[] value = new Rational[tag.getComponentCount()];
                 for (int i = 0, n = value.length; i < n; i++) {
                     value[i] = readUnsignedRational();
                 }
@@ -708,7 +700,7 @@ public class ExifParser {
             }
                 break;
             case ExifTag.TYPE_UNSIGNED_SHORT: {
-                int value[] = new int[tag.getComponentCount()];
+                int[] value = new int[tag.getComponentCount()];
                 for (int i = 0, n = value.length; i < n; i++) {
                     value[i] = readUnsignedShort();
                 }
@@ -716,7 +708,7 @@ public class ExifParser {
             }
                 break;
             case ExifTag.TYPE_LONG: {
-                int value[] = new int[tag.getComponentCount()];
+                int[] value = new int[tag.getComponentCount()];
                 for (int i = 0, n = value.length; i < n; i++) {
                     value[i] = readLong();
                 }
@@ -724,7 +716,7 @@ public class ExifParser {
             }
                 break;
             case ExifTag.TYPE_RATIONAL: {
-                Rational value[] = new Rational[tag.getComponentCount()];
+                Rational[] value = new Rational[tag.getComponentCount()];
                 for (int i = 0, n = value.length; i < n; i++) {
                     value[i] = readRational();
                 }
@@ -733,7 +725,7 @@ public class ExifParser {
                 break;
         }
         if (LOGV) {
-            Log.v(TAG, "\n" + tag.toString());
+            Log.v(TAG, "\n" + tag);
         }
     }
 
@@ -877,8 +869,8 @@ public class ExifParser {
     }
 
     private static class ImageEvent {
-        int stripIndex;
-        int type;
+        final int stripIndex;
+        final int type;
 
         ImageEvent(int type) {
             this.stripIndex = 0;
@@ -892,8 +884,8 @@ public class ExifParser {
     }
 
     private static class IfdEvent {
-        int ifd;
-        boolean isRequested;
+        final int ifd;
+        final boolean isRequested;
 
         IfdEvent(int ifd, boolean isInterestedIfd) {
             this.ifd = ifd;
@@ -902,8 +894,8 @@ public class ExifParser {
     }
 
     private static class ExifTagEvent {
-        ExifTag tag;
-        boolean isRequested;
+        final ExifTag tag;
+        final boolean isRequested;
 
         ExifTagEvent(ExifTag tag, boolean isRequireByUser) {
             this.tag = tag;

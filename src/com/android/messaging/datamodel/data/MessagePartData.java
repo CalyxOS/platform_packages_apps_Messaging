@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +26,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.android.messaging.Factory;
 import com.android.messaging.datamodel.DatabaseHelper;
 import com.android.messaging.datamodel.DatabaseHelper.PartColumns;
@@ -44,7 +47,6 @@ import com.android.messaging.util.SafeAsyncTask;
 import com.android.messaging.util.UriUtil;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a single message part. Messages consist of one or more parts which may contain
@@ -410,7 +412,7 @@ public class MessagePartData implements Parcelable {
       }
 
     public static final Parcelable.Creator<MessagePartData> CREATOR
-            = new Parcelable.Creator<MessagePartData>() {
+            = new Parcelable.Creator<>() {
         @Override
         public MessagePartData createFromParcel(final Parcel in) {
             return new MessagePartData(in);
@@ -442,13 +444,9 @@ public class MessagePartData implements Parcelable {
     public void destroyAsync() {
         final Uri contentUri = shouldDestroy();
         if (contentUri != null) {
-            SafeAsyncTask.executeOnThreadPool(new Runnable() {
-                @Override
-                public void run() {
+            SafeAsyncTask.executeOnThreadPool(() ->
                     Factory.get().getApplicationContext().getContentResolver().delete(
-                            contentUri, null, null);
-                }
-            });
+                            contentUri, null, null));
         }
     }
 
@@ -521,6 +519,7 @@ public class MessagePartData implements Parcelable {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         if (isText()) {
