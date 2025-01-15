@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,12 +149,7 @@ public class WidgetConversationProvider extends BaseWidgetProvider {
                 // widget dependent on ConversationListItemData. However, we have to update
                 // the widget regardless, even with those missing pieces. Here we update the
                 // widget again in the background.
-                SafeAsyncTask.executeOnThreadPool(new Runnable() {
-                    @Override
-                    public void run() {
-                        rebuildWidget(context, appWidgetId);
-                    }
-                });
+                SafeAsyncTask.executeOnThreadPool(() -> rebuildWidget(context, appWidgetId));
             }
         }
 
@@ -274,22 +270,17 @@ public class WidgetConversationProvider extends BaseWidgetProvider {
             return null;
         }
         final Uri uri = MessagingContentProvider.buildConversationMetadataUri(conversationId);
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(uri,
-                    ConversationListItemData.PROJECTION,
-                    null,       // selection
-                    null,       // selection args
-                    null);      // sort order
+        try (Cursor cursor = context.getContentResolver().query(uri,
+                ConversationListItemData.PROJECTION,
+                null,       // selection
+                null,       // selection args
+                null        // sort order
+        )) {
             if (cursor != null && cursor.getCount() > 0) {
                 final ConversationListItemData conv = new ConversationListItemData();
                 cursor.moveToFirst();
                 conv.bind(cursor);
                 return conv;
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
             }
         }
         return null;

@@ -23,9 +23,6 @@
     <string name="action_settings" msgid="1329008122345201684">"Paramètres"</string>
     <string name="sendButtonContentDescription" msgid="8422114979691093956">"Envoyer le message"</string>
     <string name="attachMediaButtonContentDescription" msgid="2758624209216276682">"Ajouter une pièce jointe"</string>
-    <string name="help_and_feedback_activity_label" msgid="8070710971014835182">"Aide"</string>
-    <string name="welcome" msgid="2857560951820802321">"Bienvenue"</string>
-    <string name="skip" msgid="7238879696319945853">"Ignorer"</string>
     <string name="next_with_arrow" msgid="2840729397885031655">"Suivant &gt;"</string>
     <string name="next" msgid="4496962051601713843">"Suivant"</string>
     <string name="exit" msgid="1905187380359981199">"Quitter"</string>
@@ -62,34 +59,11 @@
       <item quantity="one"><xliff:g id="COUNT_1">%d</xliff:g> jour</item>
       <item quantity="other"><xliff:g id="COUNT_1">%d</xliff:g> jours</item>
     </plurals>
-    <plurals name="week_count" formatted="false" msgid="1301973226125551953">
-      <item quantity="one"><xliff:g id="COUNT">%d</xliff:g> semaine</item>
-      <item quantity="other"><xliff:g id="COUNT">%d</xliff:g> semaines</item>
-    </plurals>
-    <plurals name="month_count" formatted="false" msgid="4858515363324110232">
-      <item quantity="one"><xliff:g id="COUNT">%d</xliff:g> mois</item>
-      <item quantity="other"><xliff:g id="COUNT">%d</xliff:g> mois</item>
-    </plurals>
-    <plurals name="year_count" formatted="false" msgid="4522546496183798317">
-      <item quantity="one"><xliff:g id="COUNT">%d</xliff:g> an</item>
-      <item quantity="other"><xliff:g id="COUNT">%d</xliff:g> ans</item>
-    </plurals>
     <string name="class_0_message_activity" msgid="4603850264073169854">"Message de catégorie 0"</string>
     <string name="save" msgid="5081141452059463572">"Enregistrer"</string>
-    <string name="sms_storage_low_auto_delete_enabled_dialog_text" msgid="8836401937872068406">"L\'appareil manque d\'espace. Pour en libérer, les messages de l\'application SMS/MMS les plus anciens seront supprimés automatiquement."</string>
-    <string name="sms_storage_low_title" msgid="7985379565293259177">"Espace de stockage bientôt saturé"</string>
-    <string name="sms_storage_low_text" msgid="7036247475855447830">"Il est possible que vous ne puissiez pas envoyer ni recevoir de messages via l\'application de SMS/MMS jusqu\'à ce que votre appareil dispose de plus d\'espace."</string>
-    <string name="sms_storage_low_notification_ticker" msgid="2393739822170029830">"Espace de stockage limité. Il est possible que vous deviez supprimer des SMS."</string>
     <string name="enter_phone_number_title" msgid="7263355879949248448">"Confirmez votre numéro de téléphone"</string>
     <string name="enter_phone_number_text" msgid="4539767473801195966">"Cette étape unique permet de garantir que vos messages de groupe sont correctement envoyés via les SMS/MMS."</string>
     <string name="enter_phone_number_hint" msgid="6242965213882272822">"Numéro de téléphone"</string>
-    <string name="delete_all_media" msgid="5549693176734564386">"Supprimer tous les messages comportant du contenu multimédia"</string>
-    <string name="delete_oldest_messages" msgid="9204277306804390707">"Supprimer les messages datant de plus de <xliff:g id="DURATION">%s</xliff:g>"</string>
-    <string name="auto_delete_oldest_messages" msgid="7766679943833404968">"Supprimer automatiquement les messages datant de plus de <xliff:g id="DURATION">%s</xliff:g>"</string>
-    <string name="ignore" msgid="7063392681130898793">"Ignorer"</string>
-    <string name="delete_all_media_confirmation" msgid="4601960420953525559">"Supprimer tous les messages comportant du contenu multimédia ?"</string>
-    <string name="delete_oldest_messages_confirmation" msgid="6172297718425265784">"Supprimer les messages datant de plus de <xliff:g id="DURATION">%s</xliff:g> ?"</string>
-    <string name="auto_delete_oldest_messages_confirmation" msgid="9071499976729145269">"Supprimer les messages datant de plus de <xliff:g id="DURATION">%s</xliff:g> et activer la suppression automatique ?"</string>
     <string name="incoming_text_sender_content_description" msgid="2481078288502342745">"<xliff:g id="SENDER">%s</xliff:g> a dit"</string>
     <string name="outgoing_text_sender_content_description" msgid="3492116976256510272">"Vous avez dit"</string>
     <string name="incoming_sender_content_description" msgid="7512757244515303701">"Expéditeur du message : <xliff:g id="SENDER">%s</xliff:g>"</string>
@@ -267,7 +241,6 @@
     <string name="auto_retrieve_mms_when_roaming_pref_summary" msgid="7347177867673486983">"Récupérer automatiquement les MMS en itinérance"</string>
     <string name="group_mms_pref_title" msgid="6553612309209383106">"Messagerie de groupe"</string>
     <string name="group_mms_pref_summary" msgid="3758710015912690629">"Utiliser un MMS pour envoyer un message unique à plusieurs destinataires"</string>
-    <string name="sms_disabled_pref_title" msgid="6352764741524717132">"Application SMS par défaut"</string>
     <string name="sms_enabled_pref_title" msgid="2961457081888153323">"Application SMS par défaut"</string>
     <!-- no translation found for default_sms_app (3907546126124760465) -->
     <skip />

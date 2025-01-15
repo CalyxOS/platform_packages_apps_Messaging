@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +24,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.provider.Telephony;
-import androidx.appcompat.mms.ApnSettingsLoader;
-import androidx.appcompat.mms.MmsManager;
+import android.support.v7.mms.ApnSettingsLoader;
+import android.support.v7.mms.MmsManager;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.android.messaging.datamodel.data.ParticipantData;
 import com.android.messaging.mmslib.SqliteWrapper;
-import com.android.messaging.util.BugleGservices;
-import com.android.messaging.util.BugleGservicesKeys;
 import com.android.messaging.util.LogUtil;
-import com.android.messaging.util.OsUtil;
 import com.android.messaging.util.PhoneUtils;
 
 import java.net.URI;
@@ -41,13 +39,11 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+/*
  * APN loader for default SMS SIM
- *
  * This loader tries to load APNs from 3 sources in order:
- * 1. Gservices setting
- * 2. System APN table
- * 3. Local APN table
+ * 1. System APN table
+ * 2. Local APN table
  */
 public class BugleApnSettingsLoader implements ApnSettingsLoader {
     /**
@@ -336,11 +332,6 @@ public class BugleApnSettingsLoader implements ApnSettingsLoader {
     }
 
     private void loadLocked(final int subId, final String apnName, final List<Apn> apns) {
-        // Try Gservices first
-        loadFromGservices(apns);
-        if (apns.size() > 0) {
-            return;
-        }
         // Try system APN table
         loadFromSystem(subId, apnName, apns);
         if (apns.size() > 0) {
@@ -354,26 +345,6 @@ public class BugleApnSettingsLoader implements ApnSettingsLoader {
     }
 
     /**
-     * Load from Gservices if APN setting is set in Gservices
-     *
-     * @param apns the list used to return results
-     */
-    private void loadFromGservices(final List<Apn> apns) {
-        final BugleGservices gservices = BugleGservices.get();
-        final String mmsc = gservices.getString(BugleGservicesKeys.MMS_MMSC, null);
-        if (TextUtils.isEmpty(mmsc)) {
-            return;
-        }
-        LogUtil.i(LogUtil.BUGLE_TAG, "Loading APNs from gservices");
-        final String proxy = gservices.getString(BugleGservicesKeys.MMS_PROXY_ADDRESS, null);
-        final int port = gservices.getInt(BugleGservicesKeys.MMS_PROXY_PORT, -1);
-        final Apn apn = BaseApn.from("mms", mmsc, proxy, Integer.toString(port));
-        if (apn != null) {
-            apns.add(apn);
-        }
-    }
-
-    /**
      * Load matching APNs from telephony provider.
      * We try different combinations of the query to work around some platform quirks.
      *
@@ -383,12 +354,12 @@ public class BugleApnSettingsLoader implements ApnSettingsLoader {
      */
     private void loadFromSystem(final int subId, final String apnName, final List<Apn> apns) {
         Uri uri;
-        if (OsUtil.isAtLeastL_MR1() && subId != MmsManager.DEFAULT_SUB_ID) {
+        if (subId != MmsManager.DEFAULT_SUB_ID) {
             uri = Uri.withAppendedPath(Telephony.Carriers.CONTENT_URI, "/subId/" + subId);
         } else {
             uri = Telephony.Carriers.CONTENT_URI;
         }
-        Cursor cursor = null;
+        Cursor cursor;
         try {
             for (; ; ) {
                 // Try different combinations of queries. Some would work on some platforms.
@@ -585,7 +556,7 @@ public class BugleApnSettingsLoader implements ApnSettingsLoader {
             return addr;
         }
         final StringBuilder builder = new StringBuilder(16);
-        String result = null;
+        String result;
         for (int i = 0; i < 4; i++) {
             try {
                 if (octets[i].length() > 3) {
@@ -621,26 +592,5 @@ public class BugleApnSettingsLoader implements ApnSettingsLoader {
             }
         }
         return false;
-    }
-
-    /**
-     * Get the ID of first APN to try
-     */
-    public static String getFirstTryApn(final SQLiteDatabase database, final String mccMnc) {
-        String key = null;
-        Cursor cursor = null;
-        try {
-            cursor = queryLocalDatabase(database, mccMnc, null/*apnName*/);
-            if (cursor.moveToFirst()) {
-                key = cursor.getString(ApnDatabase.COLUMN_ID);
-            }
-        } catch (final Exception e) {
-            // Nothing to do
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        return key;
     }
 }

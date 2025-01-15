@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +25,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
 import com.android.messaging.Factory;
 import com.android.messaging.datamodel.DataModel;
 import com.android.messaging.util.LogUtil;
 import com.android.messaging.util.LoggingTimer;
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * ActionService used to perform background processing for data model
@@ -79,7 +80,6 @@ public class ActionServiceImpl extends JobIntentService {
 
     /**
      * Handle response returned by BackgroundWorker
-     * @param request - request generating response
      * @param response - response from service
      */
     protected static void handleResponseFromBackgroundWorker(final Action action,
@@ -96,7 +96,6 @@ public class ActionServiceImpl extends JobIntentService {
 
     /**
      * Handle response returned by BackgroundWorker
-     * @param request - request generating failure
      */
     protected static void handleFailureFromBackgroundWorker(final Action action,
             final Exception exception) {
@@ -111,25 +110,16 @@ public class ActionServiceImpl extends JobIntentService {
     }
 
     // ops
-    @VisibleForTesting
     protected static final int OP_START_ACTION = 200;
-    @VisibleForTesting
     protected static final int OP_RECEIVE_BACKGROUND_RESPONSE = 201;
-    @VisibleForTesting
     protected static final int OP_RECEIVE_BACKGROUND_FAILURE = 202;
 
     // extras
-    @VisibleForTesting
     protected static final String EXTRA_OP_CODE = "op";
-    @VisibleForTesting
     protected static final String EXTRA_ACTION_BUNDLE = "datamodel_action_bundle";
-    @VisibleForTesting
     protected static final String EXTRA_WORKER_EXCEPTION = "worker_exception";
-    @VisibleForTesting
     protected static final String EXTRA_WORKER_RESPONSE = "worker_response";
-    @VisibleForTesting
     protected static final String EXTRA_WORKER_UPDATE = "worker_update";
-    @VisibleForTesting
     protected static final String BUNDLE_ACTION = "bundle_action";
 
     private BackgroundWorker mBackgroundWorker;
@@ -165,7 +155,8 @@ public class ActionServiceImpl extends JobIntentService {
                 final long delayMs) {
             final Context context = Factory.get().getApplicationContext();
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                    context, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                    context, requestCode, intent,
+                    PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             final AlarmManager mgr =
                     (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -201,7 +192,7 @@ public class ActionServiceImpl extends JobIntentService {
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         }
         return PendingIntent.getBroadcast(context, requestCode, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     /**
@@ -236,7 +227,7 @@ public class ActionServiceImpl extends JobIntentService {
      * {@inheritDoc}
      */
     @Override
-    protected void onHandleWork(final Intent intent) {
+    protected void onHandleWork(@NonNull final Intent intent) {
         if (intent == null) {
             // Shouldn't happen but sometimes does following another crash.
             LogUtil.w(TAG, "ActionService.onHandleIntent: Called with null intent");

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +28,6 @@ import com.android.messaging.datamodel.action.SyncMessagesAction;
 import com.android.messaging.datamodel.data.ParticipantData;
 import com.android.messaging.sms.MmsUtils;
 import com.android.messaging.util.Assert;
-import com.android.messaging.util.BugleGservices;
 import com.android.messaging.util.BugleGservicesKeys;
 import com.android.messaging.util.BuglePrefs;
 import com.android.messaging.util.BuglePrefsKeys;
@@ -206,13 +206,11 @@ public class SyncManager {
      * @return 0 if allowed to run now, else delay in ms
      */
     public long delayUntilFullSync(final long startTimestamp) {
-        final BugleGservices bugleGservices = BugleGservices.get();
         final BuglePrefs prefs = BuglePrefs.getApplicationPrefs();
 
         final long lastFullSyncTime = prefs.getLong(BuglePrefsKeys.LAST_FULL_SYNC_TIME, -1L);
-        final long smsFullSyncBackoffTimeMillis = bugleGservices.getLong(
-                BugleGservicesKeys.SMS_FULL_SYNC_BACKOFF_TIME_MILLIS,
-                BugleGservicesKeys.SMS_FULL_SYNC_BACKOFF_TIME_MILLIS_DEFAULT);
+        final long smsFullSyncBackoffTimeMillis =
+                BugleGservicesKeys.SMS_FULL_SYNC_BACKOFF_TIME_MILLIS_DEFAULT;
         final long noFullSyncBefore = (lastFullSyncTime < 0 ? startTimestamp :
             lastFullSyncTime + smsFullSyncBackoffTimeMillis);
 
@@ -367,12 +365,10 @@ public class SyncManager {
 
     public static class ThreadInfoCache {
         // Cache of thread->conversationId map
-        private final LongSparseArray<String> mThreadToConversationId =
-                new LongSparseArray<String>();
+        private final LongSparseArray<String> mThreadToConversationId = new LongSparseArray<>();
 
         // Cache of thread->recipients map
-        private final LongSparseArray<List<String>> mThreadToRecipients =
-                new LongSparseArray<List<String>>();
+        private final LongSparseArray<List<String>> mThreadToRecipients = new LongSparseArray<>();
 
         // Remember the conversation ids that need to be archived
         private final HashSet<String> mArchivedConversations = new HashSet<>();
@@ -438,8 +434,6 @@ public class SyncManager {
         /**
          * Load the recipients of a thread from telephony provider. If we fail, use
          * a predefined unknown recipient. This should not return null.
-         *
-         * @param threadId
          */
         public synchronized List<String> getThreadRecipients(final long threadId) {
             List<String> recipients = mThreadToRecipients.get(threadId);

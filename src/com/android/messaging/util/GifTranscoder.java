@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +34,14 @@ import java.util.concurrent.TimeUnit;
 public class GifTranscoder {
     private static final String TAG = LogUtil.BUGLE_TAG;
 
-    private static int MIN_HEIGHT = 100;
-    private static int MIN_WIDTH = 100;
+    private static final int MIN_HEIGHT = 100;
+    private static final int MIN_WIDTH = 100;
 
     static {
         System.loadLibrary("giftranscode");
     }
 
     public static boolean transcode(Context context, String filePath, String outFilePath) {
-        if (!isEnabled()) {
-            return false;
-        }
         final long inputSize = new File(filePath).length();
         Stopwatch stopwatch = Stopwatch.createStarted();
         final boolean success = transcodeInternal(filePath, outFilePath);
@@ -76,19 +74,6 @@ public class GifTranscoder {
     }
 
     public static boolean canBeTranscoded(int width, int height) {
-        if (!isEnabled()) {
-            return false;
-        }
         return width >= MIN_WIDTH && height >= MIN_HEIGHT;
-    }
-
-    private static boolean isEnabled() {
-        final boolean enabled = BugleGservices.get().getBoolean(
-                BugleGservicesKeys.ENABLE_GIF_TRANSCODING,
-                BugleGservicesKeys.ENABLE_GIF_TRANSCODING_DEFAULT);
-        if (!enabled) {
-            LogUtil.w(TAG, "GIF transcoding is disabled");
-        }
-        return enabled;
     }
 }

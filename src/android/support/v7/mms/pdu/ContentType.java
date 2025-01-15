@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007-2008 Esmertec AG.
  * Copyright (C) 2007-2008 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms.pdu;
+package android.support.v7.mms.pdu;
 
 import java.util.ArrayList;
 
@@ -30,8 +31,10 @@ public class ContentType {
 
     public static final String TEXT_PLAIN        = "text/plain";
     public static final String TEXT_HTML         = "text/html";
-    public static final String TEXT_VCALENDAR    = "text/x-vCalendar";
-    public static final String TEXT_VCARD        = "text/x-vCard";
+    public static final String TEXT_VCALENDAR    = "text/vCalendar";
+    public static final String TEXT_VCARD        = "text/vCard";
+    public static final String TEXT_X_VCALENDAR  = "text/x-vCalendar";
+    public static final String TEXT_X_VCARD      = "text/x-vCard";
 
     public static final String IMAGE_UNSPECIFIED = "image/*";
     public static final String IMAGE_JPEG        = "image/jpeg";
@@ -75,16 +78,18 @@ public class ContentType {
     public static final String APP_DRM_CONTENT   = "application/vnd.oma.drm.content";
     public static final String APP_DRM_MESSAGE   = "application/vnd.oma.drm.message";
 
-    private static final ArrayList<String> sSupportedContentTypes = new ArrayList<String>();
-    private static final ArrayList<String> sSupportedImageTypes = new ArrayList<String>();
-    private static final ArrayList<String> sSupportedAudioTypes = new ArrayList<String>();
-    private static final ArrayList<String> sSupportedVideoTypes = new ArrayList<String>();
+    private static final ArrayList<String> sSupportedContentTypes = new ArrayList<>();
+    private static final ArrayList<String> sSupportedImageTypes = new ArrayList<>();
+    private static final ArrayList<String> sSupportedAudioTypes = new ArrayList<>();
+    private static final ArrayList<String> sSupportedVideoTypes = new ArrayList<>();
 
     static {
         sSupportedContentTypes.add(TEXT_PLAIN);
         sSupportedContentTypes.add(TEXT_HTML);
         sSupportedContentTypes.add(TEXT_VCALENDAR);
         sSupportedContentTypes.add(TEXT_VCARD);
+        sSupportedContentTypes.add(TEXT_X_VCALENDAR);
+        sSupportedContentTypes.add(TEXT_X_VCARD);
 
         sSupportedContentTypes.add(IMAGE_JPEG);
         sSupportedContentTypes.add(IMAGE_GIF);

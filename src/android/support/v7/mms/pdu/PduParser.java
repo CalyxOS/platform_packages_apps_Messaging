@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007-2008 Esmertec AG.
  * Copyright (C) 2007-2008 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms.pdu;
+package android.support.v7.mms.pdu;
 
 import android.util.Log;
 
@@ -310,7 +311,7 @@ public class PduParser {
                 case PduHeaders.CONTENT_CLASS:
                 case PduHeaders.RETRIEVE_STATUS:
                 case PduHeaders.STORE_STATUS:
-                    /**
+                    /*
                      * The following field has a different value when
                      * used in the M-Mbox-Delete.conf and M-Delete.conf PDU.
                      * For now we ignore this fact, since we do not support these PDUs
@@ -380,7 +381,7 @@ public class PduParser {
                 case PduHeaders.AUX_APPLIC_ID:
                 case PduHeaders.APPLIC_ID:
                 case PduHeaders.REPLY_APPLIC_ID:
-                    /**
+                    /*
                      * The next three header fields are email addresses
                      * as defined in RFC2822,
                      * not including the characters "<" and ">"
@@ -388,7 +389,7 @@ public class PduParser {
                 case PduHeaders.MESSAGE_ID:
                 case PduHeaders.REPLACE_ID:
                 case PduHeaders.CANCEL_ID:
-                    /**
+                    /*
                      * The following field has a different value when
                      * used in the M-Mbox-Delete.conf and M-Delete.conf PDU.
                      * For now we ignore this fact, since we do not support these PDUs
@@ -778,8 +779,7 @@ public class PduParser {
                 }
 
                 case PduHeaders.CONTENT_TYPE: {
-                    HashMap<Integer, Object> map =
-                        new HashMap<Integer, Object>();
+                    HashMap<Integer, Object> map = new HashMap<>();
                     byte[] contentType =
                         parseContentType(pduDataStream, map);
 
@@ -848,7 +848,7 @@ public class PduParser {
             }
 
             /* parse part's content-type */
-            HashMap<Integer, Object> map = new HashMap<Integer, Object>();
+            HashMap<Integer, Object> map = new HashMap<>();
             byte[] contentType = parseContentType(pduDataStream, map);
             if (null != contentType) {
                 part.setContentType(contentType);

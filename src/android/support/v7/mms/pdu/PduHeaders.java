@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Esmertec AG.
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms.pdu;
+package android.support.v7.mms.pdu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -326,7 +327,7 @@ public class PduHeaders {
      * Constructor of PduHeaders.
      */
     public PduHeaders() {
-        mHeaderMap = new HashMap<Integer, Object>();
+        mHeaderMap = new HashMap<>();
     }
 
     /**
@@ -506,8 +507,6 @@ public class PduHeaders {
      *
      * @param value the value
      * @param field the field
-     * @return the TextString value of the pdu header
-     *          with specified header field
      * @throws NullPointerException if the value is null.
      */
     protected void setTextString(byte[] value, int field) {
@@ -572,8 +571,6 @@ public class PduHeaders {
      *
      * @param value the value
      * @param field the field
-     * @return the EncodedStringValue value of the pdu header
-     *          with specified header field
      * @throws NullPointerException if the value is null.
      */
     protected void setEncodedStringValue(EncodedStringValue value, int field) {
@@ -609,8 +606,6 @@ public class PduHeaders {
      *
      * @param value the value
      * @param field the field
-     * @return the EncodedStringValue value array of the pdu header
-     *          with specified header field
      * @throws NullPointerException if the value is null.
      */
     protected void setEncodedStringValues(EncodedStringValue[] value, int field) {
@@ -632,9 +627,9 @@ public class PduHeaders {
                 throw new RuntimeException("Invalid header field!");
         }
 
-        ArrayList<EncodedStringValue> list = new ArrayList<EncodedStringValue>();
-        for (int i = 0; i < value.length; i++) {
-            list.add(value[i]);
+        ArrayList<EncodedStringValue> list = new ArrayList<>();
+        for (EncodedStringValue encodedStringValue : value) {
+            list.add(encodedStringValue);
         }
         mHeaderMap.put(field, list);
     }
@@ -664,7 +659,7 @@ public class PduHeaders {
         ArrayList<EncodedStringValue> list =
             (ArrayList<EncodedStringValue>) mHeaderMap.get(field);
         if (null == list) {
-            list  = new ArrayList<EncodedStringValue>();
+            list  = new ArrayList<>();
         }
         list.add(value);
         mHeaderMap.put(field, list);

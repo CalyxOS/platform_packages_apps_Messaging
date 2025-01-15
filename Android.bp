@@ -1,4 +1,5 @@
 //  Copyright (C) 2015 The Android Open Source Project
+//  Copyright (C) 2024 The LineageOS Project
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -58,26 +59,25 @@ android_app {
     defaults: ["messaging_defaults"],
 
     static_libs: [
+        "androidx.activity_activity",
+        "androidx.annotation_annotation",
         "androidx.appcompat_appcompat",
         "androidx.collection_collection",
         "androidx.core_core",
+        "androidx.exifinterface_exifinterface",
         "androidx.fragment_fragment",
         "androidx.media_media",
-        "androidx.legacy_legacy-support-core-utils",
-        "androidx.legacy_legacy-support-core-ui",
         "androidx.palette_palette",
+        "androidx.preference_preference",
         "androidx.recyclerview_recyclerview",
         "androidx.viewpager_viewpager",
-        "androidx.legacy_legacy-support-v13",
         "colorpicker",
-        "libchips",
-        "libphotoviewer",
-        "androidx.annotation_annotation",
-        "android-common",
-        "android-common-framesequence",
         "com.android.vcard",
+        "com.google.android.material_material",
         "guava",
+        "libchips",
         "libphonenumber",
+        "libphotoviewer",
     ],
 
     aaptflags: [

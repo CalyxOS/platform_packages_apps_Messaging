@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +44,6 @@ import com.android.messaging.ui.conversationlist.ConversationListItemView;
 import com.android.messaging.util.ContentType;
 import com.android.messaging.util.Dates;
 import com.android.messaging.util.LogUtil;
-import com.android.messaging.util.OsUtil;
 import com.android.messaging.util.PhoneUtils;
 
 public class WidgetConversationListService extends RemoteViewsService {
@@ -128,18 +128,14 @@ public class WidgetConversationListService extends RemoteViewsService {
 
                 // Avatar
                 boolean includeAvatar;
-                if (OsUtil.isAtLeastJB()) {
-                    final Bundle options = mAppWidgetManager.getAppWidgetOptions(mAppWidgetId);
-                    if (LogUtil.isLoggable(TAG, LogUtil.VERBOSE)) {
-                        LogUtil.v(TAG, "getViewAt BugleWidgetProvider.WIDGET_SIZE_KEY: " +
-                                options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY));
-                    }
-
-                    includeAvatar = options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY) ==
-                            BugleWidgetProvider.SIZE_LARGE;
-                } else {
-                    includeAvatar = true;;
+                final Bundle options = mAppWidgetManager.getAppWidgetOptions(mAppWidgetId);
+                if (LogUtil.isLoggable(TAG, LogUtil.VERBOSE)) {
+                    LogUtil.v(TAG, "getViewAt BugleWidgetProvider.WIDGET_SIZE_KEY: " +
+                            options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY));
                 }
+
+                includeAvatar = options.getInt(BugleWidgetProvider.WIDGET_SIZE_KEY) ==
+                        BugleWidgetProvider.SIZE_LARGE;
 
                 // Show the avatar when grande size, otherwise hide it.
                 remoteViews.setViewVisibility(R.id.avatarView, includeAvatar ?
@@ -175,7 +171,8 @@ public class WidgetConversationListService extends RemoteViewsService {
                         builder.setSpan(new StyleSpan(Typeface.ITALIC), 0, text.length(),
                                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         builder.setSpan(new ForegroundColorSpan(
-                                    resources.getColor(R.color.widget_text_color)),
+                                    resources.getColor(R.color.widget_text_color,
+                                            mContext.getTheme())),
                                 0, text.length(),
                                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         remoteViews.setTextViewText(R.id.errorText, builder);

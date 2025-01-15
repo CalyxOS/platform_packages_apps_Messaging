@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +38,11 @@ import java.util.Map;
  */
 class ApnsXmlProcessor {
     public interface ApnHandler {
-        public void process(ContentValues apnValues);
+        void process(ContentValues apnValues);
     }
 
     public interface MmsConfigHandler {
-        public void process(String mccMnc, String key, String value, String type);
+        void process(String mccMnc, String key, String value, String type);
     }
 
     private static final String TAG = LogUtil.BUGLE_TAG;
@@ -107,10 +108,7 @@ class ApnsXmlProcessor {
     /**
      * Move XML parser forward to next event type or the end of doc
      *
-     * @param eventType
      * @return The final event type we meet
-     * @throws XmlPullParserException
-     * @throws IOException
      */
     private int advanceToNextEvent(int eventType) throws XmlPullParserException, IOException {
         for (;;) {
@@ -225,8 +223,6 @@ class ApnsXmlProcessor {
      * Process one apn
      *
      * @param apnValues Where we store the parsed apn
-     * @throws IOException
-     * @throws XmlPullParserException
      */
     private void processApn(ContentValues apnValues) throws IOException, XmlPullParserException {
         Assert.notNull(apnValues);
@@ -271,8 +267,6 @@ class ApnsXmlProcessor {
     /**
      * Process one mms_config.
      *
-     * @throws IOException
-     * @throws XmlPullParserException
      */
     private void processMmsConfig()
             throws IOException, XmlPullParserException {
@@ -302,8 +296,6 @@ class ApnsXmlProcessor {
      * Process one mms_config key/value pair
      *
      * @param mccMnc The mcc and mnc of this mms_config
-     * @throws IOException
-     * @throws XmlPullParserException
      */
     private void processMmsConfigKeyValue(String mccMnc)
             throws IOException, XmlPullParserException {

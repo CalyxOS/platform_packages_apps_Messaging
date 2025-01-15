@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Esmertec AG.
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms.pdu;
+package android.support.v7.mms.pdu;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -121,8 +122,8 @@ public class CharacterSets {
 
     static {
         // Create the HashMaps.
-        MIBENUM_TO_NAME_MAP = new HashMap<Integer, String>();
-        NAME_TO_MIBENUM_MAP = new HashMap<String, Integer>();
+        MIBENUM_TO_NAME_MAP = new HashMap<>();
+        NAME_TO_MIBENUM_MAP = new HashMap<>();
         assert(MIBENUM_NUMBERS.length == MIME_NAMES.length);
         int count = MIBENUM_NUMBERS.length - 1;
         for(int i = 0; i <= count; i++) {
@@ -139,7 +140,6 @@ public class CharacterSets {
      *
      * @param mibEnumValue An IANA assigned MIBEnum number.
      * @return The name string of the charset.
-     * @throws UnsupportedEncodingException
      */
     public static String getMimeName(int mibEnumValue)
             throws UnsupportedEncodingException {
@@ -155,7 +155,6 @@ public class CharacterSets {
      *
      * @param mimeName The charset name.
      * @return The MIBEnum number assigned by IANA for this charset.
-     * @throws UnsupportedEncodingException
      */
     public static int getMibEnumValue(String mimeName)
             throws UnsupportedEncodingException {

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Esmertec AG.
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
  * limitations under the License.
  */
 
-package androidx.appcompat.mms.pdu;
+package android.support.v7.mms.pdu;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +34,12 @@ public class PduBody {
      * Constructor.
      */
     public PduBody() {
-        mParts = new Vector<PduPart>();
+        mParts = new Vector<>();
 
-        mPartMapByContentId = new HashMap<String, PduPart>();
-        mPartMapByContentLocation  = new HashMap<String, PduPart>();
-        mPartMapByName = new HashMap<String, PduPart>();
-        mPartMapByFileName = new HashMap<String, PduPart>();
+        mPartMapByContentId = new HashMap<>();
+        mPartMapByContentLocation  = new HashMap<>();
+        mPartMapByName = new HashMap<>();
+        mPartMapByFileName = new HashMap<>();
     }
 
     private void putPartToMaps(PduPart part) {

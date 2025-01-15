@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +28,12 @@ import android.provider.Telephony.Mms;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.android.messaging.Factory;
 import com.android.messaging.datamodel.BugleDatabaseOperations;
 import com.android.messaging.datamodel.BugleNotifications;
 import com.android.messaging.datamodel.DataModel;
-import com.android.messaging.datamodel.DataModelException;
 import com.android.messaging.datamodel.DatabaseWrapper;
 import com.android.messaging.datamodel.MessagingContentProvider;
 import com.android.messaging.datamodel.MmsFileProvider;
@@ -208,7 +210,7 @@ public class ProcessDownloadedMmsAction extends Action {
     }
 
     @Override
-    protected Bundle doBackgroundWork() throws DataModelException {
+    protected Bundle doBackgroundWork() {
         final Context context = Factory.get().getApplicationContext();
         final int subId = actionParameters.getInt(KEY_SUB_ID, ParticipantData.DEFAULT_SELF_SUB_ID);
         final String messageId = actionParameters.getString(KEY_MESSAGE_ID);
@@ -268,9 +270,6 @@ public class ProcessDownloadedMmsAction extends Action {
                 if (downloadedData != null) {
                     final RetrieveConf retrieveConf =
                             MmsSender.parseRetrieveConf(downloadedData, subId);
-                    if (MmsUtils.isDumpMmsEnabled()) {
-                        MmsUtils.dumpPdu(downloadedData, retrieveConf);
-                    }
                     if (retrieveConf != null) {
                         // Insert the downloaded MMS into telephony
                         final Uri notificationUri = actionParameters.getParcelable(
@@ -565,7 +564,7 @@ public class ProcessDownloadedMmsAction extends Action {
     }
 
     public static final Parcelable.Creator<ProcessDownloadedMmsAction> CREATOR
-            = new Parcelable.Creator<ProcessDownloadedMmsAction>() {
+            = new Parcelable.Creator<>() {
         @Override
         public ProcessDownloadedMmsAction createFromParcel(final Parcel in) {
             return new ProcessDownloadedMmsAction(in);
@@ -578,7 +577,7 @@ public class ProcessDownloadedMmsAction extends Action {
     };
 
     @Override
-    public void writeToParcel(final Parcel parcel, final int flags) {
+    public void writeToParcel(@NonNull final Parcel parcel, final int flags) {
         writeActionToParcel(parcel, flags);
     }
 }

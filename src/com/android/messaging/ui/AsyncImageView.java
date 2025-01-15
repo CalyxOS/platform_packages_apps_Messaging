@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +26,11 @@ import android.graphics.RectF;
 import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import androidx.annotation.Nullable;
 
 import com.android.messaging.R;
 import com.android.messaging.datamodel.binding.Binding;
@@ -45,7 +47,6 @@ import com.android.messaging.util.Assert;
 import com.android.messaging.util.LogUtil;
 import com.android.messaging.util.ThreadUtil;
 import com.android.messaging.util.UiUtils;
-import com.google.common.annotations.VisibleForTesting;
 
 import java.util.HashSet;
 
@@ -63,11 +64,10 @@ public class AsyncImageView extends ImageView implements MediaResourceLoadListen
     // issues, so that when the image is loaded, the ImageRequest (which extends BindableData)
     // will be able to figure out whether the binding is still valid and whether the loaded image
     // should be delivered to the AsyncImageView via onMediaResourceLoaded() callback.
-    @VisibleForTesting
     public final Binding<BindableMediaRequest<ImageResource>> mImageRequestBinding;
 
     /** True if we want the image to fade in when it loads */
-    private boolean mFadeIn;
+    private final boolean mFadeIn;
 
     /** True if we want the image to reveal (scale) when it loads. When set to true, this
      * will take precedence over {@link #mFadeIn} */
@@ -84,7 +84,7 @@ public class AsyncImageView extends ImageView implements MediaResourceLoadListen
     // setting is null (no placeholder).
     private final Drawable mPlaceholderDrawable;
     protected ImageResource mImageResource;
-    private final Runnable mDisposeRunnable = new Runnable() {
+    private final Runnable mDisposeRunnable = () -> new Runnable() {
         @Override
         public void run() {
             if (mImageRequestBinding.isBound()) {
@@ -416,7 +416,7 @@ public class AsyncImageView extends ImageView implements MediaResourceLoadListen
         private final HashSet<AsyncImageView> mAttachedViews;
 
         public AsyncImageViewDelayLoader() {
-            mAttachedViews = new HashSet<AsyncImageView>();
+            mAttachedViews = new HashSet<>();
         }
 
         private void registerView(final AsyncImageView view) {
