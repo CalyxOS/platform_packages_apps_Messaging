@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fc905b03_44c1f370",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-03-06T19:41:36Z",
+      "side": 1,
+      "message": "421031: Messaging: Fix wrong enum value | https://review.lineageos.org/c/LineageOS/android_packages_apps_Messaging/+/421031",
+      "revId": "eb3157cec98457b624301ef92db97a7480e991b9",
+      "serverId": "35266860-6252-469c-a67d-185064479fc0"
+    }
+  ]
+}
