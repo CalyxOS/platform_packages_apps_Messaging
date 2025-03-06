@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c657e29_2b030d9f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2025-03-06T18:21:51Z",
+      "side": 1,
+      "message": "Not sure if this is a good fix, but it builds, and contact photo looks okay to me.",
+      "revId": "6e1df771570a25eb2ad4b355c1aaa2de0702ac8e",
+      "serverId": "35266860-6252-469c-a67d-185064479fc0"
+    }
+  ]
+}
