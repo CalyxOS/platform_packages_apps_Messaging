@@ -15,20 +15,49 @@
 #
 # Keep enough data for stack traces
 -renamesourcefileattribute SourceFile
--keepattributes SourceFile,LineNumberTable,*Annotation*
+-keepattributes SourceFile,
+                LineNumberTable,
+                RuntimeVisibleAnnotations,
+                RuntimeVisibleParameterAnnotations,
+                RuntimeVisibleTypeAnnotations,
+                AnnotationDefault
 
 -keep class com.android.messaging.* { *; }
 -keep class com.android.messaging.*.* { *; }
 -keep class com.android.messaging.*.*.* { *; }
 
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Application
--keep public class * extends android.app.Service
--keep public class * extends android.content.BroadcastReceiver
--keep public class * extends android.content.ContentProvider
--keep public class * extends android.app.backup.BackupAgentHelper
--keep public class * extends android.preference.Preference
--keep public class * extends androidx.fragment.app.Fragment
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.app.Activity {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.app.Application {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.app.Service {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.content.BroadcastReceiver {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.content.ContentProvider {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.app.backup.BackupAgentHelper {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends android.preference.Preference {
+  void <init>();
+}
+# TODO(b/373579455): Evaluate if <init> needs to be kept.
+-keep public class * extends androidx.fragment.app.Fragment {
+  void <init>();
+}
 -keep public class com.android.vcard.* { *; }
 
 -keep class androidx.collection.* { *; }
